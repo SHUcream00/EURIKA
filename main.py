@@ -11,10 +11,11 @@ async def on_message(message):
         return
 
     if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+        await channel.send('Hello!')
 
 @client.event
 async def on_ready():
+    #test2
     #client.loop.create_task(bluebird())
     #client.loop.create_task(saryunan())
     #client.loop.create_task(mandubird())
