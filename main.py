@@ -3,6 +3,13 @@ Requirement:
 Python 3.7 or up, discord-py, BeautifulSoup4, pil
 
 '''
+import os
+import BeautifulSoup4
+import aiohttp
+import discord
+import pil
+import sqlite3
+
 client = discord.Client()
 
 @client.event
