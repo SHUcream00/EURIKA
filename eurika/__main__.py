@@ -4,21 +4,22 @@ Python 3.7 or up, discord-py, BeautifulSoup4, pil
 
 '''
 import os
-import BeautifulSoup4
+from bs4 import BeautifulSoup as bs
 import aiohttp
+import asyncio
 import discord
-import pil
+from PIL import Image
 import sqlite3
+import eurika
 
 client = discord.Client()
 
 @client.event
-async def on_message(message):
-    if message.author == client.user:
+async def on_message(msg):
+    if msg.author == client.user:
         return
 
-    if message.content.startswith('$hello'):
-        await channel.send('Hello!')
+
 
 @client.event
 async def on_ready():
@@ -28,6 +29,6 @@ async def on_ready():
     #client.loop.create_task(mandubird())
     print('Eurika NEXT Main activated')
     print(client.user.name)
-    print('------')
+    print('--------------------------')
 
 client.run(id)
