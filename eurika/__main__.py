@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as bs
 import aiohttp
 import asyncio
 import discord
+from discord.ext import tasks, commands
 from PIL import Image
 import sqlite3
 import eurika
@@ -27,7 +28,7 @@ async def on_ready():
     #client.loop.create_task(bluebird())
     #client.loop.create_task(saryunan())
     #client.loop.create_task(mandubird())
-    print('Eurika NEXT Main activated')
+    print('Eurika Activated')
     print(client.user.name)
     print('--------------------------')
 
