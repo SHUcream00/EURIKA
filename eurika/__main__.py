@@ -17,14 +17,18 @@ client = discord.Client()
 
 @client.event
 async def on_message(msg):
+    '''
+    Don't answer to own call
+    '''
     if msg.author == client.user:
         return
 
 
 
+
+
 @client.event
 async def on_ready():
-    #test2
     #client.loop.create_task(bluebird())
     #client.loop.create_task(saryunan())
     #client.loop.create_task(mandubird())
