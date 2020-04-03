@@ -12,6 +12,8 @@ from discord.ext import tasks, commands
 from PIL import Image
 import sqlite3
 
+from .basics import *
+from .images import *
 
 
 client = discord.Client()
