@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup as bs
 import aiohttp
 import asyncio
 import discord
-from discord.ext import tasks, commands
-from PIL import Image
+#from discord.ext import tasks, commands
+
 import sqlite3
 
-from .basics import *
-from .images import *
-
+from basics import *
+from images import *
+from ext import pbm
 
 client = discord.Client()
 
@@ -26,9 +26,12 @@ async def on_message(msg):
     if msg.author == client.user:
         return
 
+    if msg.startswith('Memory'):
+        if msg.count(chr(32)) < 2: pass #raiseerror
+        else: msg.channel.send()
 
-
-
+    if msg.startswith('Dice'):
+        if msg.
 
 @client.event
 async def on_ready():
@@ -39,4 +42,6 @@ async def on_ready():
     print(client.user.name)
     print('--------------------------')
 
-client.run(id)
+#client.run(id)
+
+print(rand_select([1,2,3,4,5]))
