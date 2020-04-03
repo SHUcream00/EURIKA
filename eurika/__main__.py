@@ -11,7 +11,8 @@ import discord
 from discord.ext import tasks, commands
 from PIL import Image
 import sqlite3
-import eurika
+
+
 
 client = discord.Client()
 
