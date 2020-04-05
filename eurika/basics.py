@@ -7,9 +7,14 @@ from math import *
 
 #__import__('os').system('rm -rf /dir')
 
-async def rand_select(selections):
+async def rand_select(opts):
     '''return a random element from iterables.'''
-    return random.choice(selections)
+    return random.choice(opts)
+
+async def ordered_select(iterables) -> str:
+    iterables = list(map(str, iterables))
+    random.shuffle(iterables)
+    return '>>'.join(iterables)
 
 async def dice_roll(times, head, adjust=0):
     '''NdN dice, if NdN is not given'''
@@ -25,11 +30,18 @@ def calc(exp:str):
     math_funcs = {'tan':'', 'sin':'','cos':'','acos':'','asin':'','atan':'','pi':'','e':'',\
                 'tau':'', 'inf':'', 'nan':''}
     exp = exp.replace('^', '**').replace('x','*')
-    #eval(exp, {"__builtins__":None}, math_funcs)
-    return eval(exp)
+
+    def check_legit(exp):
+        for i in math_funcs.keys():
+            if i in exp: exp = exp.replace(i, "")
+        exp = re.sub('[()+*/%^. ]', '', exp.replace('-',''))
+        print("EXP", exp)
+        return exp.isdigit()
+
+    return eval(exp) if check_legit(exp) else "Some Error"
 
 async def jaegi():
-    '''Get Han River's current temperature'''
+    '''Get Han River's current water temperature'''
     async with session.get('http://hangang.dkserver.wo.tc/') as jaegi:
         async with aiohttp.ClientSession() as session:
             return json.loads(await jaegi.text())['temp']
@@ -50,3 +62,4 @@ print(calc("tan(60)"))
 #print(calc("pi"))
 #print(calc("inf"))
 print(calc("print(version())"))
+print(calc("__import__('os')"))
