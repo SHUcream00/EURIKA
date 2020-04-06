@@ -12,9 +12,10 @@ async def rand_select(opts):
     return random.choice(opts)
 
 async def ordered_select(iterables) -> str:
+    '''Returns a string with iterables ordered randomly'''
     iterables = list(map(str, iterables))
     random.shuffle(iterables)
-    return '>>'.join(iterables)
+    return '->'.join(iterables)
 
 async def dice_roll(times, head, adjust=0):
     '''NdN dice, if NdN is not given'''
@@ -35,7 +36,6 @@ def calc(exp:str):
         for i in math_funcs.keys():
             if i in exp: exp = exp.replace(i, "")
         exp = re.sub('[()+*/%^. ]', '', exp.replace('-',''))
-        print("EXP", exp)
         return exp.isdigit()
 
     return eval(exp) if check_legit(exp) else "Some Error"
@@ -61,5 +61,3 @@ async def upside_dn(alnum: str):
 print(calc("tan(60)"))
 #print(calc("pi"))
 #print(calc("inf"))
-print(calc("print(version())"))
-print(calc("__import__('os')"))
