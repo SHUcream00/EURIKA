@@ -6,6 +6,10 @@ mostly for channel management to avoid writing long blahblahs in the original fi
 import discord
 import sqlite3
 
+async def codeblock(text):
+    '''return text wrapped up in python codeblock for discord'''
+    return '```python\n'+str(text)+'\n```'
+
 async def joindate(username, joinchan):
     em = discord.Embed(title="본 계정이 슈크림딜라이트에 가입한 일자는 다음과 같습니다.", description=str(username.joined_at), colour=0x07ECBA)
     em.set_author(name=username.name, icon_url=username.avatar_url)
