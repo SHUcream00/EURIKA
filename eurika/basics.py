@@ -7,6 +7,11 @@ from math import *
 
 #__import__('os').system('rm -rf /dir')
 
+async def rand_name_gen(length):
+    '''Create random string from upper, lower alphabets with numbers for dummy names'''
+    template = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    return ''.join(random.choice(template) for _ in range(length))
+
 async def rand_select(opts):
     '''return a random element from iterables.'''
     return random.choice(opts)
@@ -58,6 +63,7 @@ async def upside_dn(alnum: str):
 
 #print(calc("1+2+32"))
 #print(calc("32 // 5"))
-print(calc("tan(60)"))
+#print(calc("tan(60)"))
 #print(calc("pi"))
 #print(calc("inf"))
+print(rand_name_gen(50))
