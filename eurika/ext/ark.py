@@ -84,7 +84,7 @@ def recruit(slice) -> str:
     for i in list(temp)[::-1]:
         intersect = set.intersection(*map(lambda x: set(target_dict[x]), i))
         if len(intersect) != 0:
-            if elite_token in slice and len(i) == 1 and i[0] != elite_token: continue
+            if elite_token in slice and len(i) == 1 and elite_token not in i: continue
             else: res['+'.join(i)] = ' '.join(sorted(list(intersect), key = lambda x: target_dict['agents'][x], reverse = True))
 
     return res
