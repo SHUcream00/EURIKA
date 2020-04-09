@@ -1,8 +1,13 @@
+
 '''
+
+EURIKA main Driver
+:copyright: (c) 2009-2020 SHUcream00
 Requirement:
 Python 3.7 or up, discord-py, BeautifulSoup4, pil
 
 '''
+
 import os
 from bs4 import BeautifulSoup as bs
 import aiohttp
@@ -31,7 +36,7 @@ async def on_message(msg):
         else: msg.channel.send()
 
     if msg.startswith('Dice'):
-        if msg.
+
 
 @client.event
 async def on_ready():
