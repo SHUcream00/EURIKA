@@ -19,7 +19,7 @@ import sqlite3
 
 from basics import *
 from images import *
-from ext import pbm
+from ext import ark, pbm 
 
 client = discord.Client()
 
