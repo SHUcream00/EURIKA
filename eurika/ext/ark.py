@@ -1,5 +1,7 @@
 '''
 Scripts for Arknights
+Author: SHUcream00 (https://github.com/SHUcream00)
+
 '''
 from itertools import chain, combinations
 
