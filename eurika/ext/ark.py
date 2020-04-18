@@ -147,8 +147,9 @@ if __name__ == "__main__":
     ark = aks()
     #print(a.recruit(str))
     #print(a.prettify_res(a.recruit(str)))
-    check_language = ark.is_kor(str_kor)
-    clause1 = ark.recruit(str, check_language)
+    target = str_kor
+    check_language = ark.is_kor(target)
+    clause1 = ark.recruit(ark.to_jpn(target), check_language)
     if clause1 != "FALSE": print(ark.prettify_res(clause1))
     else:
         clause2 = ark.list_possibles(str2)
