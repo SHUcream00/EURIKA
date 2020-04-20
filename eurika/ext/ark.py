@@ -64,8 +64,8 @@ class aks():
 
         self.krdict = {'고급특별채용': '상급엘리트', '특별채용': '엘리트', '신입': '초기', '디버프':'약화', '방어형': '방어', '누커': '폭발력',\
                         '생존형': '생존', '제어형': '제어', '코스트+': '코스트회복', '쾌속부활': '고속재배치', '힐링': '치유', '딜러': '화력',\
-                        '가드': '근위', '뱅가드': '선봉', '디펜더': '중장', '서포터': '지원', '스나이퍼': '저격', '스페셜리스트': '특수',\
-                        '근거리': '근거리', '원거리': '원거리', '범위공격': '범위공격', '캐스터': '술사'}
+                        '가드': '전위', '뱅가드': '선봉', '디펜더': '중장', '서포터': '지원', '스나이퍼': '저격', '스페셜리스트': '특수',\
+                        '근거리': '근거리', '원거리': '원거리', '범위공격': '범위공격', '캐스터': '술사', '강제이동': '강제이동'}
 
         self.krname = {'메테오리테':'메테오라이트', '블루포이즌':'블루포이즌'}
 
@@ -135,6 +135,7 @@ class aks():
 
     def is_kor(self, tags)  -> bool:
         if not tags: return False
+        print(list(x in self.krdict for x in tags))
         return True if all(x in self.krdict for x in tags) else False
 
 #TEST DRIVER
@@ -144,12 +145,15 @@ if __name__ == "__main__":
     str_elite = ['엑시아']
     str_norm = ['기타노']
     str2 = ['엑시아', '기타노', '사리아', '블루포이즌']
+    str_kor = ['스페셜리스트', '강제이동']
     ark = aks()
     #print(a.recruit(str))
     #print(a.prettify_res(a.recruit(str)))
     target = str_kor
     check_language = ark.is_kor(target)
     clause1 = ark.recruit(ark.to_jpn(target), check_language)
+    print(ark.to_jpn(target), ark.is_kor(target))
+    print(clause1)
     if clause1 != "FALSE": print(ark.prettify_res(clause1))
     else:
         clause2 = ark.list_possibles(str2)
