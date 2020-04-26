@@ -3,7 +3,6 @@ import asyncio
 import aiohttp
 import math
 
-from EurBSC import eurikabasics
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -18,8 +17,8 @@ async def randomstats(**kwargs):
         jp = 200
 
     else:
-        age = int(await eurikabasics.ddayraw(str(kwargs['user'].joined_at).split(' ')[0].split('-')))
-        age2 = int(await eurikabasics.ddayraw(str(kwargs['server'].created_at).split(' ')[0].split('-')))
+        #age = int(await eurikabasics.ddayraw(str(kwargs['user'].joined_at).split(' ')[0].split('-')))
+        #age2 = int(await eurikabasics.ddayraw(str(kwargs['server'].created_at).split(' ')[0].split('-')))
         jp = math.floor(round(age / age2, 2) * 100) - 1
 
     if jp < 0:

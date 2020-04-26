@@ -19,7 +19,7 @@ import sqlite3
 
 from basics import *
 from images import *
-from ext import ark, pbm 
+from ext import ark, pbm
 
 client = discord.Client()
 
@@ -36,7 +36,7 @@ async def on_message(msg):
         else: msg.channel.send()
 
     if msg.startswith('Dice'):
-
+        pass
 
 @client.event
 async def on_ready():
@@ -48,5 +48,4 @@ async def on_ready():
     print('--------------------------')
 
 #client.run(id)
-
-print(rand_select([1,2,3,4,5]))
+to_ico()
