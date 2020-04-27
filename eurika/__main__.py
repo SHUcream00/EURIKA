@@ -126,5 +126,5 @@ class MyClient(discord.Client):
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    token = "Njg2MDE0ODE4MDUzNzgzNjAx.XqOciQ.-XWVrQz8BIc7Y-FjsXYvEdIlfHs"
+    token = ""
     loop.run_until_complete(client.start(token, bot=True, reconnect=True))
