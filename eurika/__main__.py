@@ -20,6 +20,10 @@ import discord
 
 client = discord.Client()
 
+async def update_member(member, roles: list):
+    '''Update discord member's function -> later to discord py part'''
+    #print(roles, type(roles[0]))
+    await member.edit(roles = roles)
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -41,18 +45,20 @@ async def on_raw_reaction_add(payload):
         tutorial_k = '🇰' #:regional_indicator_k:
 
         tutorial_text = ""
+        member = client.get_guild(payload.guild_id).get_member(payload.member.id)
+
         if payload.emoji.name == tutorial_ok:
-            newb = [].append(tutorial_guild.get_role(491410064838623232))
-            await client.get_guild(payload.guild_id)\
-            .get_member(payload.member.id)\
-            .edit(newb)
-            tutorial_text = "보지털"
+            newb = list()
+            newb.append(tutorial_guild.get_role(491410064838623232))
+            await update_member(member, newb)
+            tutorial_text = "콜록"
         elif payload.emoji.name == tutorial_e:
             tutorial_text = "운지"
         elif payload.emoji.name == tutorial_j:
             tutorial_text = "아 섹스하고싶다!!!"
         elif payload.emoji.name == tutorial_k:
             tutorial_text = "나는자연인이다!!!"
+        else: tutorial_text = "거기 초끈이론 물리 공식이 나를 부르는 것 같아요"
 
         await client.get_channel(88844446929547264).send(tutorial_text)
 
