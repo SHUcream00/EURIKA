@@ -96,10 +96,10 @@ async def randsig_n():
 
 async def listsig_n():
     '''Print whole list of column initializer values of Swift Image Generator(SIG) table'''
-    db = sqlite3.connect(cwd + '\db\EurDB.db')
-    cursor = db.cursor()
-    sigtemp = cursor.execute("SELECT * FROM SImage ORDER By Initializer ASC").fetchall()
-    return sigtemp
+    async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
+        async with db.execute("SELECT * FROM SImage ORDER By Initializer ASC") as cursor:
+            res = cursor.fetchall()
+            return res
 
 '''
 if __name__ == "__main__":
