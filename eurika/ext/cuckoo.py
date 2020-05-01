@@ -19,11 +19,6 @@ class hototogisu():
         self.access_token="TOKEN"
         self.access_token_secret="TOKEN_SECRET"
 
-        self.consumer_key="ORQyianaloyZ8TMB6acRvr2fV"
-        self.consumer_secret="8gW8zLVjYpVhEbZHDhilWwZWh0BMAC4H71wwf6D0MHKNJydShZ"
-        self.access_token="3752069838-Wpgda1YLKhFU85chnlCbePYHprmJtyAYGYcllR8"
-        self.access_token_secret="YiNfGLfqKcTGNLo9zCII5b3hzjU9ExaEdZLqPMhmCapZ9"
-
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
 
@@ -75,12 +70,12 @@ class hototogisu():
                 #await db.close()
                 return twtres
 
-
+'''
 if __name__ == "__main__":
     b = asyncio.get_event_loop()
     a = hototogisu()
     b.run_until_complete(a.cry(ID=2968069742))
-    '''
+
     async with aiosqlite.connect(cwd + "\db\EurDB.db") as db:
         async with db.execute("SELECT ID FROM TwitterCache") as cursor:
             for j in await cursor.fetchall():
