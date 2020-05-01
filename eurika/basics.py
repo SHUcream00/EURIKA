@@ -77,7 +77,7 @@ async def sig_n(key = None, **kwargs):
         async with db.execute("SELECT * FROM SImage WHERE initializer='"+key+"' COLLATE NOCASE") as cursor:
             res = await cursor.fetchone()
             if res:
-                return cwd + '\image\\' + res[2], res[3]
+                return cwd + '\image\\' + res[2], res[3], res[1]
             else:
                 return None
 
