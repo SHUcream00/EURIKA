@@ -10,15 +10,26 @@ async def codeblock(text):
     '''return text wrapped up in python codeblock for discord'''
     return '```python\n'+str(text)+'\n```'
 
+#deprecated
 async def joindate(username, joinchan):
     em = discord.Embed(title="본 계정이 슈크림딜라이트에 가입한 일자는 다음과 같습니다.", description=str(username.joined_at), colour=0x07ECBA)
     em.set_author(name=username.name, icon_url=username.avatar_url)
     return em
 
+#deprecated
 async def createdate(username, joinchan):
     em = discord.Embed(title="본 계정이 디스코드에 생성된 일자는 다음과 같습니다.", description=str(username.created_at) , colour=0x07ECBA)
     em.set_author(name=username.name, icon_url=username.avatar_url)
     return em
+
+async def get_info(username, joinchan):
+    '''Get current shupoint, created date, joined date to show together.'''
+    spem = await sp.showpoint(author=message.author, phase='0')
+    em = spem[0]
+    em.add_field(name='생성일', value= str(message.author.joined_at).split()[0])
+    em.add_field(name='가입일', value= str(message.author.created_at).split()[0])
+    em.set_thumbnail(url=message.author.avatar_url)
+    await client.send_message(message.channel, embed=em)
 
 async def uselessnamegen(length):
     template = "abcdefghijklmnopqrstuvwxyz0123456789"
