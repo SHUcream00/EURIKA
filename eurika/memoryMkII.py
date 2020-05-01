@@ -8,7 +8,6 @@ Async SQLite memoization management snippet for EURIKA
 Author: 2020 SHUcream
 '''
 
-
 cwd = r'C:\EurikaMkIII'
 
 class memento():
@@ -51,7 +50,7 @@ class memento():
                     return False, 0xB5002B
                 else:
                     tgt = (res[2]+" - "+value, kwargs['author'], time.strftime('%Y-%m-%d %H:%M:%S'), key)
-                    cursor.execute("UPDATE Memory SET value=?, User=?, Date=? Where Name=? COLLATE NOCASE", tgt)
+                    await cursor.execute("UPDATE Memory SET value=?, User=?, Date=? Where Name=? COLLATE NOCASE", tgt)
                     await db.execute("UPDATE Memory SET value=?, User=?, Date=? Where Name=? COLLATE NOCASE", tgt)
                     await db.commit()
                     await db.close()
@@ -71,17 +70,3 @@ class memento():
             async with db.execute("SELECT * FROM Memory ORDER BY RANDOM() LIMIT 1") as cursor:
                 res = await cursor.fetchone()
                 return res, 0x07ECBA
-
-if __name__ == "__main__":
-    tgt_text = "섹asdasd"
-    tgt_text2 = "섹스"
-    tgt_text3 = "섹"
-    a = memento()
-    loop = asyncio.get_event_loop()
-    print(loop.run_until_complete(a.recall(tgt_text)))
-    print(loop.run_until_complete(a.recall(tgt_text2)))
-    print(loop.run_until_complete(a.recall(tgt_text3)))
-    print(loop.run_until_complete(a.rand()))
-    print(loop.run_until_complete(a.find(tgt_text3)))
-    print(time.strftime('%Y-%m-%d %H:%M:%S'))
-    print(loop.run_until_complete(a.own(author=877766012399820)))
