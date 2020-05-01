@@ -100,14 +100,3 @@ async def listsig_n():
         async with db.execute("SELECT * FROM SImage ORDER By Initializer ASC") as cursor:
             res = cursor.fetchall()
             return res
-
-'''
-if __name__ == "__main__":
-    ms1 = "-섹스"
-    ms2 = "-섹스123"
-    key = "섹스"
-
-    a = asyncio.get_event_loop()
-    for i in [ms1,ms2]:
-        print(a.run_until_complete(sig(i)))
-'''

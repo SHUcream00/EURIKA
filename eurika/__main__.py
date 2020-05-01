@@ -14,16 +14,12 @@ import asyncio
 import discord
 #from discord.ext import tasks, commands
 
-#from basics import *
+from basics import *
 #from images import *
 #from ext import ark, pbm
 
 client = discord.Client()
 
-async def update_member(member, roles: list):
-    '''Update discord member's function -> later to discord py part'''
-    #print(roles, type(roles[0]))
-    await member.edit(roles = roles)
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -45,20 +41,18 @@ async def on_raw_reaction_add(payload):
         tutorial_k = '🇰' #:regional_indicator_k:
 
         tutorial_text = ""
-        member = client.get_guild(payload.guild_id).get_member(payload.member.id)
-
         if payload.emoji.name == tutorial_ok:
-            newb = list()
-            newb.append(tutorial_guild.get_role(491410064838623232))
-            await update_member(member, newb)
-            tutorial_text = "콜록"
+            newb = [].append(tutorial_guild.get_role(491410064838623232))
+            await client.get_guild(payload.guild_id)\
+            .get_member(payload.member.id)\
+            .edit(newb)
+            tutorial_text = "보지털"
         elif payload.emoji.name == tutorial_e:
             tutorial_text = "운지"
         elif payload.emoji.name == tutorial_j:
             tutorial_text = "아 섹스하고싶다!!!"
         elif payload.emoji.name == tutorial_k:
             tutorial_text = "나는자연인이다!!!"
-        else: tutorial_text = "거기 초끈이론 물리 공식이 나를 부르는 것 같아요"
 
         await client.get_channel(88844446929547264).send(tutorial_text)
 
@@ -73,13 +67,9 @@ async def on_message(msg):
     if msg.author == client.user:
         return
 
-    if msg.content.startswith("=A"):
+    if msg.content.startswith("nimda"):
         if msg.author.id != master_id: return
         else:
-            print(msg.channel.id, type(msg.channel))
-            print(type(msg.author.id))
-            print(type(msg.author))#<class 'discord.member.Member'>
-            print(type(client.user)) #<class 'discord.user.ClientUser'>
             if msg.content.startswith("=ACAV"):
                 '''changes profile image'''
                 tgt = msg.content.split()[1]
@@ -93,10 +83,31 @@ async def on_message(msg):
         if msg.count(chr(32)) < 2: pass #raiseerror
         else: await msg.channel.send()
 
-    if msg.content.startswith('섹스'): await msg.channel.send("섹스!")
+    if msg.content.startswith('섹스'):
+        await msg.channel.send("섹스!")
 
     if msg.content.startswith('Dice'):
         pass
+
+
+    if msg.content.startswith(chr(45)):
+        '''SIG driver, help users print meme images without big effort'''
+        if 'random' not in message.content.split('-')[1].replace(' ', ''):
+            sigret = await sig_n(msg.content.split('-')[1])
+        else:
+            sigret = await randsig_n()
+
+        if sigret == None:
+            return
+        else:
+            if sigret[1] not in [None, '']:
+                em = discord.Embed(colour=0x07ECBA)
+                em.set_author(name = sigret[2])
+                em.set_image(url=sigret[1])
+                await client.send_message(msg.channel, embed=em)
+            else:
+                filelink = await client.send_file(message.channel, sigret[0], content=sigret[2])
+                await updatesig_n(filelink.attachments[0]['url'], sigret[2])
 
 @client.event
 async def on_ready():
