@@ -17,7 +17,6 @@ class hototogisu():
         self.consumer_secret="SECRET"
         self.access_token="TOKEN"
         self.access_token_secret="TOKEN_SECRET"
-
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
 
@@ -29,7 +28,7 @@ class hototogisu():
         async with aiosqlite.connect(cwd + "\db\EurDB.db") as db:
             twtcur = set()
             cursor = await db.execute("SELECT * FROM TwitterCache WHERE ID='"+str(twtid)+"' COLLATE NOCASE")
-            twtcache = cursor.fetchone()
+            twtcache = await cursor.fetchone()
             for i, j in enumerate(twtdet):
                 twttemp = []
                 j = j._json
