@@ -86,7 +86,6 @@ async def updatesig_n(link = None, name = None, **kwargs):
     async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
         await db.execute("UPDATE SImage SET cache=? Where initializer=?", (link, name))
         await db.commit()
-        await db.close()
 
 async def randsig_n():
     '''Get a random image from SIG table'''
