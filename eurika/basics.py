@@ -84,7 +84,7 @@ async def sig_n(key = None, **kwargs):
 async def updatesig_n(link = None, name = None, **kwargs):
     '''Update cache data for sig '''
     async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
-        await db.execute("UPDATE SImage SET cache=? Where initializer=?", link, name)
+        await db.execute("UPDATE SImage SET cache=? Where initializer=?", (link, name))
         await db.commit()
         await db.close()
 
@@ -102,7 +102,7 @@ async def listsig_n():
     sigtemp = cursor.execute("SELECT * FROM SImage ORDER By Initializer ASC").fetchall()
     return sigtemp
 
-
+'''
 if __name__ == "__main__":
     ms1 = "-섹스"
     ms2 = "-섹스123"
@@ -111,3 +111,4 @@ if __name__ == "__main__":
     a = asyncio.get_event_loop()
     for i in [ms1,ms2]:
         print(a.run_until_complete(sig(i)))
+'''
