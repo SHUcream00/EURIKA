@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import json
+import aiosqlite
 
 '''weather forecast script by parsing Naver weathers'''
 
@@ -35,14 +36,28 @@ async def jindo2(loc = "09710566"):
         async with session.get(temp.format(loc)) as resp:
             raw = await resp.text()
             w_data = json.loads(raw[raw.index(chr(40))+1:raw.index(chr(41))])
-            w_rgnname = "{} {}".format(w_data['wetrMap'][1][1]['lareaNm'], w_data['wetrMap'][1][1]['mareaNm'])
-            temp = w_data['wetrMap'][1][1]
-            w_now = (temp['wetrTxt'], temp['rainAmt'], temp['snowAmt'], temp['tmpr'], temp['ytmpr'])
-            w_2days = list(map(lambda x: ((x['applyYmd'], x['amWeatherText'], x['amTemperature'], x['amRainProbability']),
-                                    (x['applyYmd'], x['pmWeatherText'], x['pmTemperature'], x['pmRainProbability'])), w_data['wetrMap'][2][1]))
-            return w_rgnname, w_now, w_2days
-'''
+
+    res = {}
+    res['region_str'] = "{} {}".format(w_data['wetrMap'][1][1]['lareaNm'], w_data['wetrMap'][1][1]['mareaNm'])
+    w_rgnname = "{} {}".format(w_data['wetrMap'][1][1]['lareaNm'], w_data['wetrMap'][1][1]['mareaNm'])
+
+    temp = w_data['wetrMap'][1][1]
+    res['cur_text'] = temp['wetrTxt']
+    res['cur_rain'] = temp['rainAmt']
+    res['cur_snow'] = temp['snowAmt']
+    res['cur_temp'] = temp['tmpr']
+    res['cur_delta'] = temp['ytmpr']
+    res['today_mntext'] = w_data['wetrMap'][2][1][0]['amWeatherText']
+    res['today_mntemp'] = w_data['wetrMap'][2][1][0]['amTemperature']
+    res['today_mnrainpos'] = w_data['wetrMap'][2][1][0]['amRainProbability']
+    res['today_antext'] = w_data['wetrMap'][2][1][0]['pmWeatherText']
+    res['today_antemp'] = w_data['wetrMap'][2][1][0]['pmTemperature']
+    res['today_anrainpos'] = w_data['wetrMap'][2][1][0]['pmRainProbability']
+    w_2days = list(map(lambda x: ((x['applyYmd'], x['amWeatherText'], x['amTemperature'], x['amRainProbability']),
+                            (x['applyYmd'], x['pmWeatherText'], x['pmTemperature'], x['pmRainProbability'])), w_data['wetrMap'][2][1]))
+    #return w_rgnname, w_now, w_2days
+    return res
+
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
     print(a.run_until_complete(jindo2(a.run_until_complete(get_area_code("서울", "강남구")))))
-'''
