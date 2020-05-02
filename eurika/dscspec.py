@@ -5,6 +5,7 @@ mostly for channel management to avoid writing long blahblahs in the original fi
 
 import discord
 import sqlite3
+from point import *
 
 async def codeblock(text):
     '''return text wrapped up in python codeblock for discord'''
@@ -26,8 +27,8 @@ async def get_info(username, joinchan):
     '''Get current shupoint, created date, joined date to show together.'''
     spem = await sp.showpoint(author=message.author, phase='0')
     em = spem[0]
-    em.add_field(name='생성일', value= str(message.author.joined_at).split()[0])
-    em.add_field(name='가입일', value= str(message.author.created_at).split()[0])
+    em.add_field(name='생성일', value= str(message.author.created_at).split()[0])
+    em.add_field(name='가입일', value= str(message.author.joined_at).split()[0])
     em.set_thumbnail(url=message.author.avatar_url)
     await client.send_message(message.channel, embed=em)
 
