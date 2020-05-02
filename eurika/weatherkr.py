@@ -41,7 +41,8 @@ async def jindo2(loc = "09710566"):
             w_2days = list(map(lambda x: ((x['applyYmd'], x['amWeatherText'], x['amTemperature'], x['amRainProbability']),
                                     (x['applyYmd'], x['pmWeatherText'], x['pmTemperature'], x['pmRainProbability'])), w_data['wetrMap'][2][1]))
             return w_rgnname, w_now, w_2days
-
+'''
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
     print(a.run_until_complete(jindo2(a.run_until_complete(get_area_code("서울", "강남구")))))
+'''
