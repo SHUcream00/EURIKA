@@ -15,8 +15,11 @@ import discord
 #from discord.ext import tasks, commands
 
 from basics import *
+from weatherkr import get_area_code, jindo2
 #from images import *
+from point import sp
 #from ext import ark, pbm
+import concurrent.futures
 
 client = discord.Client()
 
