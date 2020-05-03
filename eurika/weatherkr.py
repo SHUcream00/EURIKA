@@ -86,6 +86,12 @@ class weatherf():
         res['today_antext'] = w_data['wetrMap'][2][1][0]['pmWeatherText']
         res['today_antemp'] = w_data['wetrMap'][2][1][0]['pmTemperature']
         res['today_anrainpos'] = w_data['wetrMap'][2][1][0]['pmRainProbability']
+        res['tmr_mntext'] = w_data['wetrMap'][2][1][1]['amWeatherText']
+        res['tmr_mntemp'] = w_data['wetrMap'][2][1][1]['amTemperature']
+        res['tmr_mnrainpos'] = w_data['wetrMap'][2][1][1]['amRainProbability']
+        res['tmr_antext'] = w_data['wetrMap'][2][1][1]['pmWeatherText']
+        res['tmr_antemp'] = w_data['wetrMap'][2][1][1]['pmTemperature']
+        res['tmr_anrainpos'] = w_data['wetrMap'][2][1][1]['pmRainProbability']
 
         return res
 '''
