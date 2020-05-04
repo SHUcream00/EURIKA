@@ -93,7 +93,7 @@ async def on_message(msg):
     if msg.content.startswith('Dice'):
         pass
 
-    if message.content.startswith('=날씨'):
+    if msg.content.startswith('=날씨') :
         if len(message.content.split()) == 3:
             country, city = message.content.split()[1], message.content.split()[2]
         else:
@@ -115,6 +115,23 @@ async def on_message(msg):
         em.set_thumbnail(url=praise_sun)
         await client.send_message(message.channel, embed=em)
 
+    if message.content.startswith('=빠따'):
+        def codeblock(text):
+            '''return text wrapped up in python codeblock for discord'''
+            return '```python\n'+str(text)+'\n```'
+
+        jotkey = "https://cdn.discordapp.com/attachments/88844446929547264/706777124601856030/asdf_400x400.png"
+        kbo_res = await kbo()
+        em = discord.Embed(title="오늘의 상위리그", colour=0x07ECBA)
+        text = ''
+        for i in kbo_res:
+            text += "**{} vs {} **@ {}   [**문자중계**]({})".format(i['etc'][3],i['etc'][8],i['start_time'],i['문자중계'])
+            text += codeblock("\n[{}] {}\n[{}] {}\n".format(i['etc'][3], i['etc'][2].split(chr(58))[1],i['etc'][8],i['etc'][7].split(chr(58))[1]))
+            #em.add_field(name="**{} vs {}**".format(i['etc'][3],i['etc'][8]), value="[**문자중계**]({})".format(i['문자중계']))
+        em = discord.Embed(title="오늘의 상위리그", description=text, colour=0x07ECBA)
+        #em.add_field(name='내일', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['tmr_mntext'], weather_text['tmr_mntemp'], weather_text['tmr_mnrainpos'],weather_text['tmr_antext'], weather_text['tmr_antemp'], weather_text['tmr_anrainpos']))
+        em.set_thumbnail(url=jotkey)
+        await client.send_message(message.channel, embed=em)
 
     if msg.content.startswith(chr(45)):
         '''SIG driver, help users print meme images without big effort'''

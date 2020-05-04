@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup as bs
 import asyncio
 import aiohttp
-#<ul class="sch_vs" id="todaySchedule">
-#id="todaySchedule"
+
 async def kbo():
     ns_prefix = "https://sports.news.naver.com"
     target = "https://sports.news.naver.com/kbaseball/schedule/index.nhn"
@@ -30,9 +29,12 @@ async def kbo():
                     etc.append(j.get_text().replace("\n", "").replace(chr(32), ""))
         temp['etc'] = etc
         res.append(temp)
-    print(res)
 
+    return res
+
+'''
+#Test Driver
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
     a.run_until_complete(kbo())
-    #print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구광역시", "달성군")))))
+'''
