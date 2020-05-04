@@ -81,6 +81,19 @@ async def sig_n(key = None, **kwargs):
             else:
                 return None
 
+async def keep_sig_integrity(link):
+    '''Background task to make sure image is still up'''
+    async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
+        async with db.execute("SELECT * FROM SImage where cache != NULL") as cursor:
+            targets = await cursor.fetchall()
+            for i in targets:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(deadlink) as resp:
+                        if resp.status in range(400,405) or (resp.headers["content-type"] in ["image/png", "image/jpeg", "image/jpg"]) == False:
+                            await db.execute("UPDATE SImage SET cache=NULL Where initializer=?", i[1])
+            await db.commit()
+
+
 async def updatesig_n(link = None, name = None, **kwargs):
     '''Update cache data for sig '''
     async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
