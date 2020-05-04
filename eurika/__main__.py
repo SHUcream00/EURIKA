@@ -20,6 +20,7 @@ from weatherkr import get_area_code, jindo2
 from point import sp
 #from ext import ark, pbm
 import concurrent.futures
+from weatherkr import weatherf as wt
 
 client = discord.Client()
 
@@ -91,6 +92,28 @@ async def on_message(msg):
 
     if msg.content.startswith('Dice'):
         pass
+
+    if message.content.startswith('=날씨'):
+        if len(message.content.split()) == 3:
+            country, city = message.content.split()[1], message.content.split()[2]
+        else:
+            country, city = message.content.split()[1], ""
+
+        weather = wt()
+        weather_text = await weather.jindo2(await weather.get_area_code(country, city))
+        praise_sun = "https://cdn.discordapp.com/attachments/88844446929547264/706440056671436830/Praise-the-Sun.png"
+        if weather_text['cur_delta'] > 0:
+            weather_text['cur_delta_desc'] = '더움'
+        else:
+            weather_text['cur_delta_desc'] = '시원함'
+
+        em = discord.Embed(title="{} | {}°C , {} ".format(country+ " " + city, weather_text['cur_temp'], weather_text['cur_text']),
+                           description = "강수량 {}mm, 어제보다 {}°C {}".format(weather_text['cur_rain'], weather_text['cur_delta'], weather_text['cur_delta_desc']),
+                           colour=0x07ECBA)
+        em.add_field(name='오늘', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['today_mntext'], weather_text['today_mntemp'], weather_text['today_mnrainpos'],weather_text['today_antext'], weather_text['today_antemp'], weather_text['today_anrainpos']))
+        em.add_field(name='내일', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['tmr_mntext'], weather_text['tmr_mntemp'], weather_text['tmr_mnrainpos'],weather_text['tmr_antext'], weather_text['tmr_antemp'], weather_text['tmr_anrainpos']))
+        em.set_thumbnail(url=praise_sun)
+        await client.send_message(message.channel, embed=em)
 
 
     if msg.content.startswith(chr(45)):

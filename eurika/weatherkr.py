@@ -11,6 +11,19 @@ class weatherf():
         cwd = r'C:\EurikaMkIII' #fallback
         self.db = cwd + "\db\Jindo2.db"
 
+    async def recover_abbr(self, name):
+        kr_abbr_dict = {'광주광역시, 광주시': '광주', '경상남도': '경남', '세종시': '세종',
+                        '충청남도': '충남', '충청북도': '충북', '경기': '경기도', '대전광역시, 대전시': '대전',
+                        '인천광역시, 인천시': '인천', '울산광역시, 울산시': '울산', '경상북도': '경북', '충청북도': '충북',
+                        '전라북도': '전북', '대구광역시, 대구시, 머구, 머구광역시, 머구팡역시': '대구',
+                        '부산광역시, 붓산, 쓰까, 부산시': '부산', '서울특별시, 서울시': '서울', '제주도': '제주',
+                        '전라남도': '전남', '강원도' : '강원'}
+        for i in kr_abbr_dict.keys():
+            if name in i:
+                return kr_abbr_dict[i]
+
+        return name
+
     async def get_area_code(self, county, city = ""):
         '''Finds the given area code'''
         top_region_dict = {'광주': '05', '경남': '03', '세종': '17',
@@ -18,8 +31,14 @@ class weatherf():
                         '울산': '10', '경북': '04', '충북': '16', '전북': '13',
                         '대구': '06', '부산': '08', '서울': '09', '제주': '14', '전남': '12', '강원': '01'}
 
+        county = await self.recover_abbr(county)
+        city_text = city
+        if city != "" and (city[-1] in ["시", "군"]):
+            city_text = city[:len(city)-1]
+
         async with aiosqlite.connect(self.db) as db:
-            region_text = (county+city).replace(chr(32), "")
+            region_text = (county+city_text).replace(chr(32), "")
+            print(region_text)
             async with db.execute("SELECT * FROM NaverRegions WHERE Name='"+region_text+"' COLLATE NOCASE") as cursor:
                 entry = await cursor.fetchone()
 
@@ -98,6 +117,8 @@ class weatherf():
 if __name__ == "__main__":
     x = weatherf()
     a = asyncio.get_event_loop()
-    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("서울", "강남구")))))
-    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대전")))))
+    #print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("서울", "강남구")))))
+    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구광역시", "달성군")))))
+    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구시")))))
+    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구")))))
 '''
