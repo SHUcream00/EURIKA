@@ -11,12 +11,16 @@ async def kbo():
 
     soup = bs(raw, "lxml") #can i make it an async?
     games = soup.find_all("li", class_="before_game")
-
+    if len(games) == 0:
+        games = soup.find_all("li", class_="live")
+    if len(games) == 0:
+        games = soup.find_all("li", class_="after_game")
     #broadcast = a, btn_ltr
     res = []
     for i in games:
         temp, etc = {}, []
         for j in i.findChildren():
+
             if j.name == 'em':
                 temp['start_time'] = j.text.replace("\n","").replace(chr(32),"")
             elif j.name == 'a':
@@ -32,9 +36,8 @@ async def kbo():
 
     return res
 
-'''
+
 #Test Driver
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
     a.run_until_complete(kbo())
-'''
