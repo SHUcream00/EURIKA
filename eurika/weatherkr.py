@@ -2,7 +2,10 @@ import aiohttp
 import asyncio
 import json
 import aiosqlite
+import ast
 import time
+from collections import defaultdict
+import xmltodict
 
 '''weather forecast script by parsing Naver weathers'''
 
@@ -112,12 +115,44 @@ class weatherf():
         res['tmr_anrainpos'] = w_data['wetrMap'][2][1][1]['pmRainProbability']
 
         return res
-'''
+
+    async def jindo3(self, loc):
+        '''Get the actual forecast data - better one'''
+        temp = "https://weather.naver.com/flash/naverRgnTownFcast.nhn?naverRgnCd={}"
+
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM NaverRegions WHERE region_code='"+loc+"' COLLATE NOCASE") as cursor:
+                entry = await cursor.fetchone()
+
+            if entry[2] != time.strftime('%Y-%m-%d %H'):
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(temp.format(loc)) as resp:
+                        raw = await resp.text()
+                        await db.execute("UPDATE NaverRegions SET last_checked=?, cache=? Where region_code=?", (time.strftime('%Y-%m-%d %H'), str(raw), loc))
+                        await db.commit()
+
+            else:
+                raw = entry[3]
+
+        w_data = xmltodict.parse(raw)['message']['result']['townWetrFeed']
+
+        print(w_data['maxTmpr']) #최대
+        print(w_data['minTmpr']) #최소
+        res = defaultdict(list)
+        for i in map(lambda x: (x['ymd'], x['hh'], x['wetrTxt'], x['tmpr'], x['humd']), w_data['townWetrs']['townWetr']):
+            res[i[0]].append(i[1:])
+
+        res['maxTmpr'].append(w_data['maxTmpr'])
+        res['minTmpr'].append(w_data['minTmpr'])
+
+        print(res)
+        return
+
 if __name__ == "__main__":
     x = weatherf()
     a = asyncio.get_event_loop()
-    #print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("서울", "강남구")))))
-    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구광역시", "달성군")))))
-    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구시")))))
-    print(a.run_until_complete(x.jindo2(a.run_until_complete(x.get_area_code("대구")))))
-'''
+    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("서울", "강남구")))))
+    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("대구광역시", "달성군")))))
+    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("대구시")))))
+    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code(" 대구")))))
+    print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("서울시")))))
