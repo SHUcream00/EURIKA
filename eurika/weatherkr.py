@@ -136,20 +136,10 @@ class weatherf():
         w_data = xmltodict.parse(raw)['message']['result']['townWetrFeed']
 
         res = defaultdict(list)
-        for i in map(lambda x: (x['ymd'], x['hh'], x['wetrTxt'], x['tmpr'], x['humd']), w_data['townWetrs']['townWetr']):
+        for i in map(lambda x: (x['ymd'], x['hh'], x['wetrTxt'], x['tmpr'], x['humd'], x['rainProb']), w_data['townWetrs']['townWetr']):
             res[i[0]].append(i[1:])
 
         res['maxTmpr'].append(w_data['maxTmpr'])
         res['minTmpr'].append(w_data['minTmpr'])
 
-        return
-'''
-if __name__ == "__main__":
-    x = weatherf()
-    a = asyncio.get_event_loop()
-    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("서울", "강남구")))))
-    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("대구광역시", "달성군")))))
-    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("대구시")))))
-    #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code(" 대구")))))
-    print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("서울시")))))
-'''
+        return res
