@@ -2,7 +2,6 @@ import aiohttp
 import asyncio
 import json
 import aiosqlite
-import ast
 import time
 from collections import defaultdict
 import xmltodict
