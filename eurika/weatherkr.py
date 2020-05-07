@@ -147,7 +147,7 @@ class weatherf():
 
         print(res)
         return
-
+'''
 if __name__ == "__main__":
     x = weatherf()
     a = asyncio.get_event_loop()
@@ -156,3 +156,4 @@ if __name__ == "__main__":
     #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("대구시")))))
     #print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code(" 대구")))))
     print(a.run_until_complete(x.jindo3(a.run_until_complete(x.get_area_code("서울시")))))
+'''
