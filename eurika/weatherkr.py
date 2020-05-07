@@ -136,8 +136,6 @@ class weatherf():
 
         w_data = xmltodict.parse(raw)['message']['result']['townWetrFeed']
 
-        print(w_data['maxTmpr']) #최대
-        print(w_data['minTmpr']) #최소
         res = defaultdict(list)
         for i in map(lambda x: (x['ymd'], x['hh'], x['wetrTxt'], x['tmpr'], x['humd']), w_data['townWetrs']['townWetr']):
             res[i[0]].append(i[1:])
@@ -145,7 +143,6 @@ class weatherf():
         res['maxTmpr'].append(w_data['maxTmpr'])
         res['minTmpr'].append(w_data['minTmpr'])
 
-        print(res)
         return
 '''
 if __name__ == "__main__":
