@@ -93,45 +93,62 @@ async def on_message(msg):
     if msg.content.startswith('Dice'):
         pass
 
-    if msg.content.startswith('=날씨') :
-        if len(message.content.split()) == 3:
-            country, city = message.content.split()[1], message.content.split()[2]
-        else:
-            country, city = message.content.split()[1], ""
+    if msg.content.startswith('=날씨'):
+        try:
+            if len(msg.content.split()) == 3:
+                country, city = msg.content.split()[1], msg.content.split()[2]
+            else:
+                country, city = msg.content.split()[1], ""
 
-        weather = wt()
-        weather_text = await weather.jindo2(await weather.get_area_code(country, city))
-        praise_sun = "https://cdn.discordapp.com/attachments/88844446929547264/706440056671436830/Praise-the-Sun.png"
-        if weather_text['cur_delta'] > 0:
-            weather_text['cur_delta_desc'] = '더움'
-        else:
-            weather_text['cur_delta_desc'] = '시원함'
+            def stringfy_w_res(date):
+                res = ''
+                for i in weather_text[date]:
+                    temp = "**{}시** | {}°C, {}\n 습도 {}% 강수 {}%\n".format(i[0], i[2], emojify_wt(i[1]), i[3], i[4])
+                    res += temp
+                return res
 
-        em = discord.Embed(title="{} | {}°C , {} ".format(country+ " " + city, weather_text['cur_temp'], weather_text['cur_text']),
-                           description = "강수량 {}mm, 어제보다 {}°C {}".format(weather_text['cur_rain'], weather_text['cur_delta'], weather_text['cur_delta_desc']),
-                           colour=0x07ECBA)
-        em.add_field(name='오늘', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['today_mntext'], weather_text['today_mntemp'], weather_text['today_mnrainpos'],weather_text['today_antext'], weather_text['today_antemp'], weather_text['today_anrainpos']))
-        em.add_field(name='내일', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['tmr_mntext'], weather_text['tmr_mntemp'], weather_text['tmr_mnrainpos'],weather_text['tmr_antext'], weather_text['tmr_antemp'], weather_text['tmr_anrainpos']))
-        em.set_thumbnail(url=praise_sun)
-        await client.send_message(message.channel, embed=em)
+            def emojify_wt(wtstring):
+                return wtstring.replace("맑음",":sunny:").replace("흐림",":cloud:").replace("구름많음",":cloud:").replace("비",":cloud_rain:")
 
-    if message.content.startswith('=빠따'):
+            weather = wt()
+            weather_text = await weather.jindo3(await weather.get_area_code(country, city))
+            praise_sun = "https://cdn.discordapp.com/attachments/88844446929547264/706440056671436830/Praise-the-Sun.png"
+
+            today = datetime.date.today()
+            today_str = today.strftime('%Y%m%d')
+            tmr_str, twod_str = (today + datetime.timedelta(days=1)).strftime('%Y%m%d'), (today + datetime.timedelta(days=2)).strftime('%Y%m%d')
+            em = discord.Embed(title="{} | {}°C, {} 습도 {}%".format(country+ " " + city, weather_text[today_str][0][2], emojify_wt(weather_text[today_str][0][1]), weather_text[today_str][0][3]),
+                               description = "오늘 최고기온 {}°C 최저기온 {}°C :umbrella2: 강수 {}%".format(weather_text['maxTmpr'][0], weather_text['minTmpr'][0], weather_text[today_str][0][4]),
+                               colour=0x07ECBA)
+
+            if weather_text.get(today_str, False):
+                em.add_field(name='오늘', value= stringfy_w_res(today_str))
+            em.add_field(name='내일', value= stringfy_w_res(tmr_str))
+
+            em.set_thumbnail(url=praise_sun)
+
+            await msg.channel.send_message(embed=em)
+        except:
+
+            await msg.channel.send_message("ㅗ")
+
+    if msg.content.startswith('=빠따'):
         def codeblock(text):
             '''return text wrapped up in python codeblock for discord'''
             return '```python\n'+str(text)+'\n```'
 
         jotkey = "https://cdn.discordapp.com/attachments/88844446929547264/706777124601856030/asdf_400x400.png"
         kbo_res = await kbo()
-        em = discord.Embed(title="오늘의 상위리그", colour=0x07ECBA)
+
         text = ''
         for i in kbo_res:
-            text += "**{} vs {} **@ {}   [**문자중계**]({})".format(i['etc'][3],i['etc'][8],i['start_time'],i['문자중계'])
-            text += codeblock("\n[{}] {}\n[{}] {}\n".format(i['etc'][3], i['etc'][2].split(chr(58))[1],i['etc'][8],i['etc'][7].split(chr(58))[1]))
+            text += "**{} {} :regional_indicator_v: :regional_indicator_s: {} {} ** {} [**문자중계**]({})".format(i['etc'][3], i['etc'][5], i['etc'][10],i['etc'][8],i['start_time'],i['문자중계'])
+            text += codeblock("\n[{}] {} VS {} [{}] \n".format(i['etc'][3], i['etc'][2].split(chr(58))[1], i['etc'][7].split(chr(58))[1], i['etc'][8]))
             #em.add_field(name="**{} vs {}**".format(i['etc'][3],i['etc'][8]), value="[**문자중계**]({})".format(i['문자중계']))
-        em = discord.Embed(title="오늘의 상위리그", description=text, colour=0x07ECBA)
-        #em.add_field(name='내일', value="\n오전 - **{}**\n {}°C 강수확률 {}%\n\n오후 - **{}**\n {}°C 강수확률 {}%".format(weather_text['tmr_mntext'], weather_text['tmr_mntemp'], weather_text['tmr_mnrainpos'],weather_text['tmr_antext'], weather_text['tmr_antemp'], weather_text['tmr_anrainpos']))
+        em = discord.Embed(title=":baseball: 오늘의 상위리그", description=text, colour=0x07ECBA)
+
         em.set_thumbnail(url=jotkey)
-        await client.send_message(message.channel, embed=em)
+        await msg.channel.send(embed=em)
 
     if msg.content.startswith(chr(45)):
         '''SIG driver, help users print meme images without big effort'''
