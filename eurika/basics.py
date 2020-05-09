@@ -1,5 +1,6 @@
 import re
 import random
+import time
 import datetime
 import asyncio
 import aiohttp
@@ -113,3 +114,26 @@ async def listsig_n():
         async with db.execute("SELECT * FROM SImage ORDER By Initializer ASC") as cursor:
             res = cursor.fetchall()
             return res
+
+async def retrieve_alarms(id_):
+    '''Get the list of unfinished alarms from db'''
+    async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
+        async with db.execute("SELECT * FROM SImage Where owner = {}".format(id_)) as cursor:
+            return await cursor.fetchall()
+
+async def alarm(id_, timestring, memo):
+    async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
+
+        await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ({}, {}, {})".format(id_, timestring, memo))
+        await db.commit()
+
+async def time_to_sec(timestr):
+    alm='0'
+    if re.search('\d+시간', timestr):
+        almtime += '+' + re.search('\d+시간', timestr).group(0).replace('시간', ' * 3600')
+    if re.search('\d+분', timestr):
+        almtime += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
+    if re.search('\d+초', timestr):
+        almtime += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
+
+    

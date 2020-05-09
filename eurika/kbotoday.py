@@ -14,7 +14,7 @@ async def kbo():
     if len(games) == 0:
         games = soup.find_all("li", class_="live")
     if len(games) == 0:
-        games = soup.find_all("li", class_="after_game")
+        games = soup.find_all("li", class_="end")
     #broadcast = a, btn_ltr
     res = []
     for i in games:
@@ -33,11 +33,12 @@ async def kbo():
                     etc.append(j.get_text().replace("\n", "").replace(chr(32), ""))
         temp['etc'] = etc
         res.append(temp)
-
+    print(res)
     return res
 
-
+'''
 #Test Driver
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
     a.run_until_complete(kbo())
+'''
