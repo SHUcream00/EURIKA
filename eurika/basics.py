@@ -108,6 +108,10 @@ async def randsig_n():
             res = await cursor.fetchone()
             return cwd + '\image\\' + res[2], res[3], res[1]
 
+async def codeblock(text: str):
+    '''return text wrapped up in python codeblock for discord'''
+    return '```python\n'+str(text)+'\n```'
+
 async def listsig_n():
     '''Print whole list of column initializer values of Swift Image Generator(SIG) table'''
     async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
@@ -135,5 +139,3 @@ async def time_to_sec(timestr):
         almtime += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
     if re.search('\d+초', timestr):
         almtime += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
-
-    
