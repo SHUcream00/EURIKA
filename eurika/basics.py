@@ -5,6 +5,7 @@ import datetime
 import asyncio
 import aiohttp
 import ast
+import string
 import aiosqlite
 from math import *
 
@@ -14,7 +15,7 @@ cwd = r'C:\EurikaMkIII'
 
 async def rand_name_gen(length):
     '''Create random string from upper, lower alphabets with numbers for dummy names'''
-    template = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    template = string.ascii_letters + string_digits
     return ''.join(random.choice(template) for _ in range(length))
 
 async def rand_select(opts):
