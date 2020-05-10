@@ -35,7 +35,7 @@ class weatherf():
 
         county = await self.recover_abbr(county)
         city_text = city
-        if city != "" and (city[-1] in ["시", "군"]):
+        if city != "" and (city[-1] in ["시", "구", "군"]):
             city_text = city[:len(city)-1]
 
         async with aiosqlite.connect(self.db) as db:
