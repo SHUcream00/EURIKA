@@ -4,122 +4,146 @@ point management
 import aiosqlite
 import time
 import discord
+import math
+from io import BytesIO
+from PIL import Image
+from basics import codeblock
 
 class sp():
     def __init__(self, db):
         self.db = db
 
-    async def chklast(*args, **kwargs):
+    async def chklast(self, *args, **kwargs):
         async with aiosqlite.connect(self.db) as db:
             async with db.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['user'])+"' COLLATE NOCASE") as cursor:
                 curind = cursor.fetchone()
-                if !curind:
-                    return False
+                if not curind:
+                    return 0
                 else:
-                    return False if curind[4] == time.strftime('%Y-%m-%d %H:%M:%S') else True
+                    return 0 if curind[4] == time.strftime('%Y-%m-%d %H:%M:%S') else True
 
-    async def incpoint(*args, **kwargs):
+    async def incpoint(self, *args, **kwargs):
         async with aiosqlite.connect(self.db) as db:
-            async with db.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['user'])+"' COLLATE NOCASE") as cursor:
+            async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['user']))) as cursor:
                 curind = await cursor.fetchone()
                 if await sp.chklast(user=kwargs['user']) == 0 and kwargs['log'] != 'SHUCMD':
-                    return False
+                    return 0
                 else:
-                    await db.execute("UPDATE SHUPoint SET pt=?, log=?, last_login=? Where id=? COLLATE NOCASE", (curind[1] + int(kwargs['amnt']), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' ' + kwargs['log'] + str(kwargs['amnt']) + ', ' + curind[2], datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'), str(kwargs['user'])))
+                    await db.execute("UPDATE SHUPoint SET pt={}, log={}, last_login={} Where id={} COLLATE NOCASE".format(curind[1] + int(kwargs['amnt']), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' ' + kwargs['log'] + str(kwargs['amnt']) + ', ' + curind[2], datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'), str(kwargs['user'])))
                     await db.commit()
-                    return True
+                    return 1
 
-    async def inceverypoint(*args, **kwargs):
+    async def inceverypoint(self, *args, **kwargs):
         async with aiosqlite.connect(self.db) as db:
             await db.execute("UPDATE SHUPoint SET pt= pt + {}".format(kwargs['amnt']))
 
         return
 
-    async def showpoint(*args, **kwargs):
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        if cursor.execute("SELECT COUNT(*) FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()[0] == 0:
-            cursor.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
-            db.commit()
-            em = discord.Embed(title=kwargs['author'].name + '의 SHUPoint 시스템 등록 절차가 완료되었습니다.', colour=0x07ECBA)
-            db.close()
-            return em, 0
-        else:
-            sptemp = cursor.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()
-            em = discord.Embed(title=kwargs['author'].name + "(ID: " + kwargs['author'].id + ")", description='```python\n현재 보유 슈포인트: {:,}pt```'.format(sptemp[1]), colour=0x07ECBA)
-            em.set_footer(text='포인트의 이용은 별도 커맨드, [`]을 이용해주시기 바랍니다.')
-            return em, 0
+    async def showpoint(self, *args, **kwargs):
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id))) as cursor:
+                curind = await cursor.fetchone()
+                if not curind:
+                    await db.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
+                    await db.commit()
+                    em = discord.Embed(title='{}의 SHUPoint 시스템 등록 절차가 완료되었습니다.'.format(str(kwargs['author'].name)), colour=0x07ECBA)
+                    return em, 0
+                else:
+                    cursor = await db.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE")
+                    sptemp = await cursor.fetchone()
+                    em = discord.Embed(title=kwargs['author'].name + "(ID: " + kwargs['author'].id + ")"
+                                        , description='```python\n현재 보유 슈포인트: {:,}pt```'.format(sptemp[1])
+                                        , colour=0x07ECBA)
+                    em.set_footer(text='포인트의 이용은 별도 커맨드, =상점 을 이용해주시기 바랍니다.')
+                    return em, 0
 
     async def showpreregimage(*args, **kwargs):
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        if cursor.execute("SELECT COUNT(*) FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()[0] == 0:
-            cursor.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
-            db.commit()
-            em = discord.Embed(title=kwargs['author'].name + '의 SHUPoint 시스템 등록 절차가 완료되었습니다.', colour=0x07ECBA)
-            db.close()
-            return em, 0
-        else:
-            prereg_list = '```python\n'
-            reg = cursor.execute("SELECT * FROM SImage WHERE registrator = {}".format(kwargs['author'].id)).fetchall()
-            for i in reg:
-                prereg_list += i[1] + ' '
-            prereg_list += '```'
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id))) as cursor:
+                curind = await cursor.fetchone()
 
-            em = discord.Embed(title="{}이(가) 등록한 짤 리스트".format(kwargs['author']), description=prereg_list, colour=0x07ECBA)
-            em.set_footer(text='짤의 추가/삭제는 =상점 을 이용하시기 바랍니다.')
-            return em, 0
+                if not curind:
+                    await db.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
+                    await db.commit()
+                    em = discord.Embed(title=kwargs['author'].name + '의 SHUPoint 시스템 등록 절차가 완료되었습니다.', colour=0x07ECBA)
+                    db.close()
+                    return em, 0
+
+                else:
+                    res = ''
+                    cursor = await db.execute("SELECT * FROM SImage WHERE registrator = {}".format(kwargs['author'].id))
+                    reg = await cursor.fetchall()
+
+                    for i in reg:
+                        res += i[1] + ' '
+
+                    em = discord.Embed(title="{}이(가) 등록한 짤 리스트".format(kwargs['author'])
+                                        , description=await codeblock(res), colour=0x07ECBA)
+                    em.set_footer(text='짤의 추가/삭제는 =상점 을 이용하시기 바랍니다.')
+
+                    return em, 0
 
     async def showrank():
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        splst = cursor.execute("SELECT * FROM SHUPoint ORDER BY pt DESC LIMIT 15").fetchall()
-        spres = '```python\n'
-        for i in splst:
-            ranktgt = discord.utils.get(client.get_server(str(88844446929547264)).members, id=str(i[0]))
-            if ranktgt != None:
-                spres += "{:<4} : {} {}".format(str(ranktgt.name.strip()), '{:,}', "\n").format(i[1])
-            else:
-                spres += "{:<4} : {} {}".format(str('이타치'), '{:,}', "\n").format(i[1])
-        spres += '```'
-        spem = discord.Embed(title='현 시점의 SHU포인트 보유자 상위 리스트입니다.', description=spres, colour=0x07ECBA)
-        db.close()
-        return spem
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint ORDER BY pt DESC LIMIT 15") as cursor:
+                curdata = await cursor.fetchall()
+                res = ''
+                for i in curdata:
+                    ranktgt = discord.utils.get(client.get_guild(str(88844446929547264)).members, id=str(i[0]))
+                    if ranktgt != None:
+                        res += "{:<4} : {} {}".format(str(ranktgt.name.strip()), '{:,}', "\n").format(i[1])
+                    else:
+                        res += "{:<4} : {} {}".format(str('이타치'), '{:,}', "\n").format(i[1])
+
+                spem = discord.Embed(title='현 시점의 SHU포인트 보유자 상위 리스트입니다.'
+                                            , description=await codeblock(res), colour=0x07ECBA)
+
+                return spem
 
     async def showhrank():
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        splst = cursor.execute("SELECT * FROM SHUPoint ORDER BY hillarystreak DESC LIMIT 10").fetchall()
-        spres = '```python\n'
-        for i in splst:
-            sptemp = discord.utils.get(client.get_server(str(88844446929547264)).members, id=str(i[0])).name.strip()
-            spres += "{:<4} : {} {}".format(str(sptemp), '{:,}', "\n").format(i[5])
-        spres += '```\n역대 랭킹은 =힐러리전당 커맨드를 이용하시기 바랍니다.'
-        spem = discord.Embed(title='현 시점에서 가장 운이 없는 놈 순위입니다.', description=spres, colour=0x07ECBA)
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint ORDER BY hillarystreak DESC LIMIT 10") as cursor:
+                curdata = await cursor.fetchall()
+                res = ''
+                for i in splst:
+                    sptemp = discord.utils.get(client.get_guild(str(88844446929547264)).members, id=str(i[0])).name.strip()
+                    spres += "{:<4} : {} {}".format(str(sptemp), '{:,}', "\n").format(i[5])
+                spem = discord.Embed(title='현 시점에서 가장 운이 없는 놈 순위입니다.'
+                                    , description=await codeblock(res), colour=0x07ECBA)
+                spem.set_footer(text = '역대 랭킹은 =힐러리전당 커맨드를 이용하시기 바랍니다.')
 
-        db.close()
-        return spem
+                return spem
 
     async def showhlegend():
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        splst = cursor.execute("SELECT * FROM SHUPoint ORDER BY hillariest DESC LIMIT 10").fetchall()
-        spres = '```python\n'
-        for i in splst:
-            if i[7] != None:
-                sptemp = discord.utils.get(client.get_server(str(88844446929547264)).members, id=str(i[0])).name.strip()
-                spres += "{:<4} : {} {} {}".format(str(sptemp), '{:,}', '[LAST: ' + i[7] + ']',"\n").format(i[6])
-        spres += '```'
-        spem = discord.Embed(title='역대 가장 운이 없던 놈 순위입니다.', description=spres, colour=0x07ECBA)
-        db.close()
-        return spem
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint ORDER BY hillariest DESC LIMIT 10") as cursor:
+                curdata = await cursor.fetchall()
+                res = ''
+                for i in splst:
+                    if i[7] != None:
+                        sptemp = discord.utils.get(client.get_guild(str(88844446929547264)).members, id=str(i[0])).name.strip()
+                        spres += "{:<4} : {} {} {}".format(str(sptemp), '{:,}', '[LAST: ' + i[7] + ']',"\n").format(i[6])
+                spem = discord.Embed(title='역대 가장 운이 없던 놈 순위입니다.'
+                                    , description=await codeblock(spres), colour=0x07ECBA)
+                return spem
 
     async def regcom(*args, **kwargs):
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT COUNT(*) FROM SImage WHERE registrator = {}".format(kwargs['author'].id)) as cursor:
+                curdata = await cursor.fetchone()
+                prereg_cnt = curdata[0]
+                if prereg_cnt == 0:
+                    prereg_cnt = 1
+
+                price = math.floor(13 * math.log(prereg_cnt) + 1)
+
+
         db = sqlite3.connect(cwd + '\db\EurDB.db')
         cursor = db.cursor()
         prereg_cnt = cursor.execute("SELECT COUNT(*) FROM SImage WHERE registrator = {}".format(kwargs['author'].id)).fetchone()[0]
         if prereg_cnt == 0:
             prereg_cnt = 1
+
         price = math.floor(13 * math.log(prereg_cnt) + 1)
 
         if len(kwargs) == 2:
@@ -349,23 +373,26 @@ class sp():
         return em
 
     async def geths(*args):
-        hillst = sqlite3.connect(cwd + '\db\EurDB.db').cursor().execute("SELECT * FROM SHUPoint WHERE id='"+args[0]+"' COLLATE NOCASE").fetchone()[5]
-        if hillst is None:
-            hillst = 0
-        return hillst
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(args[0])) as cursor:
+                curdata = await cursor.fetchone()
+
+        return curdata[5] if curdata[5] else 0
 
     async def updatehs(*args):
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        hill_exist = cursor.execute('SELECT hillariest FROM SHUPoint WHERE id=? COLLATE NOCASE', (args[0],)).fetchone()[0]
-        if hill_exist != None:
-            if hill_exist < args[1]:
-                cursor.execute('UPDATE SHUPoint SET hillariest=?, hillariest_at=? WHERE id=? COLLATE NOCASE', (str(args[1]), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), args[0]))
-        elif args[1] > 0:
-            cursor.execute('UPDATE SHUPoint SET hillariest=?, hillariest_at=? WHERE id=? COLLATE NOCASE', (str(args[1]), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), args[0]))
-        cursor.execute('UPDATE SHUPoint SET hillarystreak=? Where id=? COLLATE NOCASE', (str(args[1]), args[0]))
-        db.commit()
-        db.close()
+        async with aiosqlite.connect(self.db) as db:
+            async with db.execute("SELECT hillariest FROM SHUPoint WHERE id={} COLLATE NOCASE".format(args[0])) as cursor:
+                curdata = await cursor.fetchone()
+                hill_exist = curdata[0]
+
+                if hill_exist:
+                    if hill_exist < args[1]:
+                        await db.execute(execute('UPDATE SHUPoint SET hillariest=?, hillariest_at=? WHERE id=? COLLATE NOCASE', (str(args[1]), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), args[0])))
+                elif args[1] > 0:
+                    await db.execute('UPDATE SHUPoint SET hillariest=?, hillariest_at=? WHERE id=? COLLATE NOCASE', (str(args[1]), datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), args[0]))
+
+                await db.execute('UPDATE SHUPoint SET hillarystreak=? Where id=? COLLATE NOCASE', (str(args[1]), args[0]))
+                await db.commit()
         return
 
     async def deleteroles(*args, **kwargs):
@@ -377,7 +404,7 @@ class sp():
                 async with session.get(kwargs['detail'].split()[1]) as resp:
                     sigraw = await resp.read()
                     sigres = Image.open(BytesIO(sigraw))
-                    signame = await eurikabasics.uselessnamegen(12)
+                    signame = await rand_name_gen(12)
                     sigcmd = kwargs['detail'].split()[0].replace('-', '')
                     sigdest = "C:\EurikaMkIII\image\\" + signame + "." + sigres.format.lower()
                     if sigres.format.lower() == 'gif':
@@ -386,26 +413,34 @@ class sp():
                             siggif.write(r.content)
                     else:
                         sigres.save(sigdest)
-                    args[0].execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE")
-                    curind = args[0].fetchone()
-                    args[0].execute("INSERT INTO SImage (initializer, loc, registrator) VALUES ('" + sigcmd + "', '" + signame + "." + sigres.format.lower() + "', '" + kwargs['author'].id + "')")
-                    args[0].execute("UPDATE SHUPoint SET pt=?, log=? Where id=? COLLATE NOCASE", (curind[1] - kwargs['price'], datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' SIGADD-' + str(kwargs['price']) + ', ' + curind[2], kwargs['author'].id))
-                    em = discord.Embed(title=kwargs['author'].name + '이 신규 커맨드 -' + sigcmd + '을(를) 등록했습니다.', description='{}pt가 소모됩니다.'.format(str(kwargs['price'])), colour=0x07ECBA)
+
+            async with aiosqlite.connect(self.db) as db:
+                async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id))) as cursor:
+                    curind = await cursor.fetchone()
+                    await db.execute("INSERT INTO SImage (initializer, loc, registrator) VALUES ('" + sigcmd + "', '" + signame + "." + sigres.format.lower() + "', '" + kwargs['author'].id + "')")
+                    await db.execute("UPDATE SHUPoint SET pt=?, log=? Where id=? COLLATE NOCASE", (curind[1] - kwargs['price'], datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' SIGADD-' + str(kwargs['price']) + ', ' + curind[2], kwargs['author'].id))
+                    em = discord.Embed(title= + '{}이 신규 커맨드 -{}을(를) 등록했습니다.'.format(kwargs['author'].name, sigcmd)
+                                        , description='{}pt가 소모됩니다.'.format(str(kwargs['price'])), colour=0x07ECBA)
+
+                    await db.commit()
 
         except:
             #print("Unexpected error:", sys.exc_info())
-            em = discord.Embed(title=kwargs['author'].name + ', 에러가 발생했습니다.', colour=0xd4eff6)
+            em = discord.Embed(title='{}, 에러가 발생했습니다.'.format(kwargs['author'].name)
+                                , colour=0xd4eff6)
 
         return em
 
     async def delsig(*args, **kwargs):
         try:
-            args[0].execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE")
-            curind = args[0].fetchone()
-            args[0].execute("DELETE FROM SImage WHERE initializer ='{}'".format(kwargs['detail']))
-            args[0].execute("UPDATE SHUPoint SET pt=?, log=? Where id=? COLLATE NOCASE", (curind[1] - 5, datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' SIGDEL-05,' + curind[2], kwargs['author'].id))
-            em = discord.Embed(title='{}이 신규 커맨드 -을(를) 삭제했습니다.'.format(kwargs['author'].name, str(kwargs['detail'])), description='5pt가 소모됩니다.', colour=0x07ECBA)
+            async with aiosqlite.connect(self.db) as db:
+                async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id))) as cursor:
+                    curind = await cursor.fetchone()
+                    await db.execute("DELETE FROM SImage WHERE initializer ='{}' COLLATE NOCASE".format(kwargs['detail']))
+                    await db.execute("UPDATE SHUPoint SET pt=?, log=? Where id=? COLLATE NOCASE", (curind[1] - 5, datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S') + ' SIGDEL-05,' + curind[2], kwargs['author'].id))
+                    em = discord.Embed(title='{}이 신규 커맨드 -{}을(를) 삭제했습니다.'.format(kwargs['author'].name, str(kwargs['detail'])), description='5pt가 소모됩니다.', colour=0x07ECBA)
         except:
             #print("Unexpected error:", sys.exc_info())
-            em = discord.Embed(title=kwargs['author'].name + ', 에러가 발생했습니다.', colour=0xd4eff6)
+            em = discord.Embed(title='{}, 에러가 발생했습니다.'.format(kwargs['author'].name), colour=0xd4eff6)
+
         return em
