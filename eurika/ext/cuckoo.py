@@ -28,7 +28,7 @@ class hototogisu():
         twtdet = api.user_timeline(id = twtid, count=10, tweet_mode='extended')
         twtres = []
         async with aiosqlite.connect(cwd + "\db\EurDB.db") as db:
-            async with db.execute("SELECT * FROM TwitterCache WHERE ID='"+str(twtid)+"' COLLATE NOCASE") as cursor:
+            async with db.execute("SELECT * FROM TwitterCache WHERE ID={} COLLATE NOCASE".format(str(twtid))) as cursor:
 
                 twtcur = set()
                 twtcache = await cursor.fetchone()
