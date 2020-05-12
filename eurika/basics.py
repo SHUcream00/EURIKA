@@ -126,11 +126,12 @@ async def retrieve_alarms(id_):
         async with db.execute("SELECT * FROM SImage Where owner = {}".format(id_)) as cursor:
             return await cursor.fetchall()
 
-async def alarm(id_, timestring, memo):
+async def alarm(id_, timestring, memo = ""):
     async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
+        timestring = datetime.datetime.now() + datetime.timedelta(seconds=await time_to_sec(timestring))
 
-        await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ({}, {}, {})".format(id_, timestring, memo))
-        await db.commit()
+        #await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ({}, {}, {})".format(id_, timestring, memo))
+        #await db.commit()
 
 async def time_to_sec(timestr):
     alm_sec='0'
@@ -140,6 +141,6 @@ async def time_to_sec(timestr):
         alm_sec += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
     if re.search('\d+초', timestr):
         alm_sec += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
-    print(alm_sec)
+
     res = await calc(alm_sec)
     return res
