@@ -36,7 +36,7 @@ async def dday(first: datetime.date, second:datetime.date):
     '''Tells difference between two given dates in days'''
     return (first-second).days
 
-def calc(exp:str):
+async def calc(exp:str):
     #THIS USES EVAL PERIOD
     '''Calculate the given expression without eval()'''
     math_funcs = {'tan':'', 'sin':'','cos':'','acos':'','asin':'','atan':'','pi':'','e':'',\
@@ -49,7 +49,7 @@ def calc(exp:str):
         exp = re.sub('[()+*/%^. ]', '', exp.replace('-',''))
         return exp.isdigit()
 
-    return eval(exp) if check_legit(exp) else "Some Error"
+    return eval(exp) if check_legit(exp) else False
 
 async def jaegi():
     '''Get Han River's current water temperature'''
@@ -133,10 +133,13 @@ async def alarm(id_, timestring, memo):
         await db.commit()
 
 async def time_to_sec(timestr):
-    alm='0'
+    alm_sec='0'
     if re.search('\d+시간', timestr):
-        almtime += '+' + re.search('\d+시간', timestr).group(0).replace('시간', ' * 3600')
+        alm_sec += '+' + re.search('\d+시간', timestr).group(0).replace('시간', ' * 3600')
     if re.search('\d+분', timestr):
-        almtime += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
+        alm_sec += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
     if re.search('\d+초', timestr):
-        almtime += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
+        alm_sec += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
+    print(alm_sec)
+    res = await calc(alm_sec)
+    return res
