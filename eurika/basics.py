@@ -120,27 +120,45 @@ async def listsig_n():
             res = cursor.fetchall()
             return res
 
-async def retrieve_alarms(id_):
+async def get_alarm(id_):
     '''Get the list of unfinished alarms from db'''
+    res = []
     async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
-        async with db.execute("SELECT * FROM SImage Where owner = {}".format(id_)) as cursor:
-            return await cursor.fetchall()
+        async with db.execute("SELECT * FROM Alarm Where owner = {}".format(id_)) as cursor:
+            for i in await cursor.fetchall():
+                time_offset = (datetime.datetime.strptime(i[2], "%Y-%m-%d %H:%M:%S") - datetime.datetime.now()).total_seconds()
+                if time_offset < 0:
+                    await db.execute("DELETE FROM Alarm WHERE id = {}".format(i[0]))
+                else:
+                    res.append(i)
+            await db.commit()
+    return res
 
 async def alarm(id_, timestring, memo = ""):
-    async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
-        timestring = datetime.datetime.now() + datetime.timedelta(seconds=await time_to_sec(timestring))
+    '''Main driver function for alarm category methods'''
+    timestring = await time_to_sec(timestring)
+    await set_alarm(id_, timestring, memo)
+    await asyncio.sleep(timestring)
 
-        #await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ({}, {}, {})".format(id_, timestring, memo))
-        #await db.commit()
+async def set_alarm(id_, timestring, memo = ""):
+    async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
+        timestring = (datetime.datetime.now() + datetime.timedelta(seconds=timestring)).strftime("%Y-%m-%d %H:%M:%S")
+        await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ('{}', '{}', '{}')".format(id_, timestring, memo))
+        await db.commit()
+    return
 
 async def time_to_sec(timestr):
-    alm_sec='0'
-    if re.search('\d+시간', timestr):
-        alm_sec += '+' + re.search('\d+시간', timestr).group(0).replace('시간', ' * 3600')
-    if re.search('\d+분', timestr):
-        alm_sec += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
-    if re.search('\d+초', timestr):
-        alm_sec += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
+    '''to secs()'''
+    if timestr and str(timestr).isdigit() == True:
+        alm_sec = str(timestr)
+    else:
+        alm_sec='0'
+        if re.search('\d+시간', timestr):
+            alm_sec += '+' + re.search('\d+시간', timestr).group(0).replace('시간', ' * 3600')
+        if re.search('\d+분', timestr):
+            alm_sec += '+' + re.search('\d+분', timestr).group(0).replace('분', ' * 60')
+        if re.search('\d+초', timestr):
+            alm_sec += '+' + re.search('\d+초', timestr).group(0).replace('초', ' * 1')
 
     res = await calc(alm_sec)
     return res
