@@ -17,13 +17,14 @@ async def codeblock(text:str):
 async def restart_alarm(client):
     cur_alarms = await get_alarm()
     for i in cur_alarms:
-        client.loop.create_task(restarted_alarm(client, i))
+        client.loop.create_task(restarted_alarm(client, *i))
 
 async def restarted_alarm(client, *args):
     time_offset = (datetime.datetime.strptime(args[2], "%Y-%m-%d %H:%M:%S") - datetime.datetime.now()).total_seconds()
-    channel = client.get_channel(str(args[4]))
+    channel = client.get_channel(args[4])
+    user = await client.fetch_user(args[1])
     await asyncio.sleep(time_offset)
-    await channel.send("{}, 알람 종료야".format(await client.fetch_user(args[1].mention), args[3]))
+    await channel.send("{}, 알람 종료야".format(user.mention, args[3]))
 
 async def get_info(username, joinchan):
     '''Get current shupoint, created date, joined date to show together.'''

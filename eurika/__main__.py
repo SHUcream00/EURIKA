@@ -21,7 +21,7 @@ from weatherkr import weatherf as wt
 from point import sp
 #from ext import ark, pbm
 import concurrent.futures
-from weatherkr import weatherf as wt
+from kbotoday import kbo
 
 client = discord.Client()
 client.init_switch = True
