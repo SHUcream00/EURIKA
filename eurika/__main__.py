@@ -16,7 +16,7 @@ import discord
 
 from basics import *
 from dscspec import *
-from weatherkr import get_area_code, jindo2
+from weatherkr import weatherf as wt
 #from images import *
 from point import sp
 #from ext import ark, pbm
@@ -99,11 +99,12 @@ async def on_message(msg):
             alarm_amt = msg.content.split()[1:]
             if alarm_amt[0] == "리스트":
                 alarm_list = await get_alarm(msg.author.id)
-                await msg.channel.send("\n".join(map(lambda x: "예정시각: {}, 남은시간: {} 메모: {}".format(x[2],x[4],x[3]), sorted(alarm_list, key=lambda x: x[2])))
+                await msg.channel.send("\n".join(map(lambda x: "예정시각: {}, 남은시간: {} 메모: {}".format(x[2],x[6],x[3])
+                                                                                                , sorted(alarm_list, key=lambda x: x[2])))
             else:
-                await msg.channel.send_message("{}, 시간이 되면 알려줄게!".format(msg.author.display_name))
+                await msg.channel.send("{}, 시간이 되면 알려줄게!".format(msg.author.display_name))
                 await alarm(msg.author.id, *alarm_amt, channel=msg.channel.id, server=msg.guild.id)
-                await msg.channel.send("{}, 알람 종료야".format(message.author.mention))
+                await msg.channel.send("{}, 알람 종료야".format(msg.author.mention))
         except:
             await msg.channel.send("=알람 시간 메모")
 
