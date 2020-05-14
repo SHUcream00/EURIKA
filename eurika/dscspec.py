@@ -5,23 +5,25 @@ mostly for channel management to avoid writing long blahblahs in the original fi
 
 import discord
 import sqlite3
+import datetime
+import asyncio
 from point import *
+from basics import get_alarm
 
-async def codeblock(text):
+async def codeblock(text:str):
     '''return text wrapped up in python codeblock for discord'''
     return '```python\n'+str(text)+'\n```'
 
-#deprecated
-async def joindate(username, joinchan):
-    em = discord.Embed(title="본 계정이 슈크림딜라이트에 가입한 일자는 다음과 같습니다.", description=str(username.joined_at), colour=0x07ECBA)
-    em.set_author(name=username.name, icon_url=username.avatar_url)
-    return em
+async def restart_alarm(client):
+    cur_alarms = await get_alarm()
+    for i in cur_alarms:
+        client.loop.create_task(restarted_alarm(client, i))
 
-#deprecated
-async def createdate(username, joinchan):
-    em = discord.Embed(title="본 계정이 디스코드에 생성된 일자는 다음과 같습니다.", description=str(username.created_at) , colour=0x07ECBA)
-    em.set_author(name=username.name, icon_url=username.avatar_url)
-    return em
+async def restarted_alarm(client, *args):
+    time_offset = (datetime.datetime.strptime(args[2], "%Y-%m-%d %H:%M:%S") - datetime.datetime.now()).total_seconds()
+    channel = client.get_channel(str(args[4]))
+    await asyncio.sleep(time_offset)
+    await channel.send("{}, 알람 종료야".format(await client.fetch_user(args[1].mention), args[3]))
 
 async def get_info(username, joinchan):
     '''Get current shupoint, created date, joined date to show together.'''
@@ -31,42 +33,6 @@ async def get_info(username, joinchan):
     em.add_field(name='가입일', value= str(message.author.joined_at).split()[0])
     em.set_thumbnail(url=message.author.avatar_url)
     await client.send_message(message.channel, embed=em)
-
-async def uselessnamegen(length):
-    template = "abcdefghijklmnopqrstuvwxyz0123456789"
-    res = ''
-    for i in range(length):
-        res += random.choice(template)
-    return res
-
-async def sig(*args, **kwargs):
-    '''By Swift Image Generator for printing out some meme images quickly as possible'''
-    db = sqlite3.connect(cwd + '\db\EurDB.db')
-    cursor = db.cursor()
-    sigres = cursor.execute("SELECT * FROM SImage WHERE initializer='"+kwargs['name']+"' COLLATE NOCASE").fetchone()
-
-    if sigres != None:
-        if sigres[3] != None:
-            return 1, cwd + '\image\\' + sigres[2], sigres[3]
-        else:
-            return 1, cwd + '\image\\' + sigres[2]
-    else:
-        return 0, 0
-
-async def listsig():
-    '''Print whole list of column initializer values of Swift Image Generator(SIG) table'''
-    db = sqlite3.connect(cwd + '\db\EurDB.db')
-    cursor = db.cursor()
-    sigtemp = cursor.execute("SELECT * FROM SImage ORDER By Initializer ASC").fetchall()
-    return sigtemp
-
-async def randsig():
-    '''Get a random image from SIG table'''
-    db = sqlite3.connect(cwd + '\db\EurDB.db')
-    cursor = db.cursor()
-    sigtemp = cursor.execute("SELECT * FROM SImage ORDER By RANDOM() LIMIT 1").fetchone()
-    return 1, cwd + '\image\\' + sigtemp[2], sigtemp[1]
-
 
 async def bitly(**kwargs):
     db = sqlite3.connect(cwd + '\db\EurDB.db')

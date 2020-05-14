@@ -120,30 +120,35 @@ async def listsig_n():
             res = cursor.fetchall()
             return res
 
-async def get_alarm(id_):
-    '''Get the list of unfinished alarms from db'''
+async def get_alarm(id_ = None):
+    '''Get the list of unfinished alarms from db which has been registered by id'''
     res = []
     async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
-        async with db.execute("SELECT * FROM Alarm Where owner = {}".format(id_)) as cursor:
+        if id_:
+            statement = "SELECT * FROM Alarm Where owner = {}".format(id_)
+        else:
+            statement = "SELECT * FROM Alarm"
+        async with db.execute(statement) as cursor:
             for i in await cursor.fetchall():
                 time_offset = (datetime.datetime.strptime(i[2], "%Y-%m-%d %H:%M:%S") - datetime.datetime.now()).total_seconds()
                 if time_offset < 0:
                     await db.execute("DELETE FROM Alarm WHERE id = {}".format(i[0]))
                 else:
-                    res.append(i)
-            await db.commit()
+                    res.append(i + (str(datetime.timedelta(seconds=time_offset)),))
+        await db.commit()
     return res
 
-async def alarm(id_, timestring, memo = ""):
+async def alarm(id_, timestring, memo = "", **kwargs):
     '''Main driver function for alarm category methods'''
     timestring = await time_to_sec(timestring)
-    await set_alarm(id_, timestring, memo)
+    await set_alarm(id_, timestring, memo, channel=kwargs['channel'], server=kwargs['server'])
     await asyncio.sleep(timestring)
 
-async def set_alarm(id_, timestring, memo = ""):
+async def set_alarm(id_, timestring, memo = "", **kwargs):
     async with aiosqlite.connect(cwd + '\db\EurAlmDB.db') as db:
         timestring = (datetime.datetime.now() + datetime.timedelta(seconds=timestring)).strftime("%Y-%m-%d %H:%M:%S")
-        await db.execute("INSERT INTO Alarm (owner, time, memo) VALUES ('{}', '{}', '{}')".format(id_, timestring, memo))
+        await db.execute("INSERT INTO Alarm (owner, time, memo, channel, server) \
+                        VALUES ('{}', '{}', '{}', '{}', '{}')".format(id_, timestring, memo, kwargs['channel'], kwargs['server']))
         await db.commit()
     return
 

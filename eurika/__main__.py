@@ -15,6 +15,7 @@ import discord
 #from discord.ext import tasks, commands
 
 from basics import *
+from dscspec import *
 from weatherkr import get_area_code, jindo2
 #from images import *
 from point import sp
@@ -23,7 +24,8 @@ import concurrent.futures
 from weatherkr import weatherf as wt
 
 client = discord.Client()
-
+client.init_switch = True
+cwd = r'C:\EurikaMkIII'
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -84,16 +86,28 @@ async def on_message(msg):
                 await msg.channel.send("It shall be done")
 
     if msg.content.startswith('Memory'):
-        if msg.count(chr(32)) < 2: pass #raiseerror
-        else: await msg.channel.send()
-
-    if msg.content.startswith('섹스'):
-        await msg.channel.send("섹스!")
+        if msg.count(chr(32)) < 2:
+            pass #raiseerror
+        else:
+            await msg.channel.send()
 
     if msg.content.startswith('Dice'):
         pass
 
-    if msg.content.startswith('=날씨'):
+    if msg.content.startswith('=2알람'):
+        try:
+            alarm_amt = msg.content.split()[1:]
+            if alarm_amt[0] == "리스트":
+                alarm_list = await get_alarm(msg.author.id)
+                await msg.channel.send("\n".join(map(lambda x: "예정시각: {}, 남은시간: {} 메모: {}".format(x[2],x[4],x[3]), sorted(alarm_list, key=lambda x: x[2])))
+            else:
+                await msg.channel.send_message("{}, 시간이 되면 알려줄게!".format(msg.author.display_name))
+                await alarm(msg.author.id, *alarm_amt, channel=msg.channel.id, server=msg.guild.id)
+                await msg.channel.send("{}, 알람 종료야".format(message.author.mention))
+        except:
+            await msg.channel.send("=알람 시간 메모")
+
+    if msg.content.startswith('=2날씨'):
         try:
             if len(msg.content.split()) == 3:
                 country, city = msg.content.split()[1], msg.content.split()[2]
@@ -127,12 +141,12 @@ async def on_message(msg):
 
             em.set_thumbnail(url=praise_sun)
 
-            await msg.channel.send_message(embed=em)
+            await msg.channel.send(embed=em)
         except:
 
-            await msg.channel.send_message("ㅗ")
+            await msg.channel.send("ㅗ")
 
-    if msg.content.startswith('=빠따'):
+    if msg.content.startswith('=2빠따'):
         def codeblock(text):
             '''return text wrapped up in python codeblock for discord'''
             return '```python\n'+str(text)+'\n```'
@@ -152,7 +166,7 @@ async def on_message(msg):
 
     if msg.content.startswith(chr(45)):
         '''SIG driver, help users print meme images without big effort'''
-        if 'random' not in message.content.split('-')[1].replace(' ', ''):
+        if 'random' not in msg.content.split('-')[1].replace(' ', ''):
             sigret = await sig_n(msg.content.split('-')[1])
         else:
             sigret = await randsig_n()
@@ -166,14 +180,16 @@ async def on_message(msg):
                 em.set_image(url=sigret[1])
                 await client.send_message(msg.channel, embed=em)
             else:
-                filelink = await client.send_file(message.channel, sigret[0], content=sigret[2])
+                filelink = await client.send_file(msg.channel, sigret[0], content=sigret[2])
                 await updatesig_n(filelink.attachments[0]['url'], sigret[2])
 
 @client.event
 async def on_ready():
-    #client.loop.create_task(bluebird())
-    #client.loop.create_task(saryunan())
-    #client.loop.create_task(mandubird())
+    if client.init_switch == True:
+        client.loop.create_task(bluebird())
+        client.loop.create_task(saryunan())
+        client.loop.create_task(restart_alarm(client))
+        client.init_switch = False
     print('Eurika Activated')
     print(client.user.name)
     print('--------------------------')
