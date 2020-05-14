@@ -7,6 +7,7 @@ import aiohttp
 import ast
 import string
 import aiosqlite
+import json
 from math import *
 
 #__import__('os').system('rm -rf /dir')
@@ -167,3 +168,19 @@ async def time_to_sec(timestr):
 
     res = await calc(alm_sec)
     return res
+
+async def bitly(**kwargs):
+    async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
+        async with db.execute("SELECT * FROM Bitly WHERE oridmn={} COLLATE NOCASE".format(kwargs['original'])) as cursor:
+            pick = cursor.fetchone()
+            if pick:
+                return pick[2]
+            else:
+                blytkn = 'ec36cf5499eee7b6e20c9a0f817e0df5d2e1a265'
+                async with aiohttp.ClientSession() as session:
+                    async with session.get('https://api-ssl.bitly.com/v3/shorten', params={'Content-Type':'application/x-www-form-urlencoded', 'access_token': blytkn, 'longUrl': kwargs['original']}) as resp:
+                        blyres = json.loads(await resp.text())['data']['url']
+                        await db.execute("INSERT INTO Bitly (oridmn, shtdmn) VALUES ('{}', '{}')".format(kwargs['original'], blyres))
+                        await db.commit()
+
+                return blyres

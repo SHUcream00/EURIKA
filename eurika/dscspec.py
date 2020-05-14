@@ -34,20 +34,3 @@ async def get_info(username, joinchan):
     em.add_field(name='가입일', value= str(message.author.joined_at).split()[0])
     em.set_thumbnail(url=message.author.avatar_url)
     await client.send_message(message.channel, embed=em)
-
-async def bitly(**kwargs):
-    db = sqlite3.connect(cwd + '\db\EurDB.db')
-    cursor = db.cursor()
-    blycnt = cursor.execute("SELECT COUNT(*) FROM Bitly WHERE oridmn='"+kwargs['original']+"' COLLATE NOCASE").fetchone()[0]
-    if blycnt >= 1:
-        blytemp = cursor.execute("SELECT * FROM Bitly WHERE oridmn='"+kwargs['original']+"' COLLATE NOCASE").fetchone()
-        return blytemp[2]
-    else:
-        blytkn = 'ec36cf5499eee7b6e20c9a0f817e0df5d2e1a265'
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://api-ssl.bitly.com/v3/shorten', params={'Content-Type':'application/x-www-form-urlencoded', 'access_token': blytkn, 'longUrl': kwargs['original']}) as resp:
-                blyres = json.loads(await resp.text())['data']['url']
-                cursor.execute('INSERT INTO Bitly (oridmn, shtdmn) VALUES ("'+kwargs['original']+'", "'+blyres+'")')
-                db.commit()
-                db.close()
-                return blyres
