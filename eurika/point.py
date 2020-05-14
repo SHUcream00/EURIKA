@@ -10,8 +10,9 @@ from PIL import Image
 from basics import codeblock
 
 class sp():
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
+        cwd = r'C:\EurikaMkIII'
+        self.db = cwd + '\db\EurDB.db'
 
     async def chklast(self, *args, **kwargs):
         async with aiosqlite.connect(self.db) as db:
@@ -44,8 +45,7 @@ class sp():
             async with db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id))) as cursor:
                 curind = await cursor.fetchone()
                 if not curind:
-                    await db.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
-                    await db.commit()
+                    await self.register_account(str(kwargs['author'].id))
                     em = discord.Embed(title='{}의 SHUPoint 시스템 등록 절차가 완료되었습니다.'.format(str(kwargs['author'].name)), colour=0x07ECBA)
                     return em, 0
                 else:
@@ -127,181 +127,160 @@ class sp():
                                     , description=await codeblock(spres), colour=0x07ECBA)
                 return spem
 
+    async def register_account(id_:str):
+        async with aiosqlite.connect(self.db) as db:
+            await db.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('{}', 0, '', '{}')".format(id_, datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')))
+            await db.commit()
+
     async def regcom(*args, **kwargs):
+
+        embed_nofund = discord.Embed(title="{}, [키움]이시네요 ㅅㄱ".format(kwargs['author'].nick), colour=0xd4eff6)
+        embed_cancel = discord.Embed(title="{}, 취소되었습니다.".format(kwargs['author'].nick), colour=0xd4eff6)
+
         async with aiosqlite.connect(self.db) as db:
             async with db.execute("SELECT COUNT(*) FROM SImage WHERE registrator = {}".format(kwargs['author'].id)) as cursor:
                 curdata = await cursor.fetchone()
-                prereg_cnt = curdata[0]
-                if prereg_cnt == 0:
-                    prereg_cnt = 1
+                price = math.floor(13 * math.log(max(curdata[0], 1)) + 1)
 
-                price = math.floor(13 * math.log(prereg_cnt) + 1)
+            if len(kwargs) == 2:
+                cursor = await db.execute("SELECT COUNT(*) FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id)))
+                spcnt = await cursor.fetchone()[0]
+                if spcnt == 0:
+                    await self.register_account(str(kwargs['author'].id))
+                    em = discord.Embed(title=kwargs['author'].name + '의 SHUPoint 시스템 등록 절차가 완료되었습니다.', colour=0x07ECBA)
+                    return em, 0
+                else:
+                    cursor = await db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id)))
+                    sptemp = await cursor.fetchone()
+                    em = discord.Embed(title=kwargs['author'].name + "(ID: " + kwargs['author'].id + ") 등록일자: " + sptemp[3], description='```python\n현재 보유 슈포인트: {:,}pt```'.format(sptemp[1]), colour=0x07ECBA)
+                    em.add_field(name = '**[옵션 넘버][소모되는 포인트] 각 옵션 설명 및 명칭 **', value = '선택가능한 각 옵션의 설명입니다.')
+                    em.add_field(name = '[1][{}pt] 신규 짤 등록 - 현재까지 추가한 짤: {}개'.format(str(price), str(prereg_cnt)), value = '-로 시작하는 짤 명령어목록에 신규 명령어를 추가할 수 있습니다. 가격은 기존 등록짤 수에따라 상승합니다.')
+                    em.add_field(name = '[2][5pt] 기존 짤 삭제', value = "자신이 등록한 짤 하나를 삭제할 수 있습니다.")
+                    em.add_field(name = '[3][100pt] 숏 소드 신규 발급', value = '테러방지 수단을 입수할 수 있습니다.')
+                    em.add_field(name = '[4][1,000pt] 셀펠매 탈출권', value = '셀프펠라매니아 상태의 남은 기간에 상관 없이 즉시 벗어날 수 있습니다.')
+                    em.add_field(name = '[5][1,000pt] 다른 마을로의 이주', value = '정해진 색상 내에서 유저 한 명의 색을 바꿀 수 있습니다.')
+                    em.add_field(name = '[6][20,000pt] 신규 마을 생성권', value = '새로운 마을사람 등급을 생성합니다. 생성과 동시에 해당 마을으로 이주하게 됩니다.')
+                    em.add_field(name = '[7] 관두자', value = '그래')
+                    em.set_footer(text=':exclamation: 몇 번으로 할까? 숫자만 입력하세요. 60초가 주어집니다.')
+                    return em, 1
 
-
-        db = sqlite3.connect(cwd + '\db\EurDB.db')
-        cursor = db.cursor()
-        prereg_cnt = cursor.execute("SELECT COUNT(*) FROM SImage WHERE registrator = {}".format(kwargs['author'].id)).fetchone()[0]
-        if prereg_cnt == 0:
-            prereg_cnt = 1
-
-        price = math.floor(13 * math.log(prereg_cnt) + 1)
-
-        if len(kwargs) == 2:
-            spcnt = cursor.execute("SELECT COUNT(*) FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()[0]
-            if spcnt == 0:
-                cursor.execute("INSERT INTO SHUPoint (id, pt,log,created_date) VALUES ('"+str(kwargs['author'].id)+"', 0, '', '"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+"')")
-                db.commit()
-                em = discord.Embed(title=kwargs['author'].name + '의 SHUPoint 시스템 등록 절차가 완료되었습니다.', colour=0x07ECBA)
-                db.close()
-                return em, 0
             else:
-                sptemp = cursor.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()
+                cursor = await db.execute("SELECT * FROM SHUPoint WHERE id={} COLLATE NOCASE".format(str(kwargs['author'].id)))
+                sptemp = await cursor.fetchone()
+                if kwargs['selection'] == '1':
+                    if sptemp[1] >= price:
+                        if kwargs['phase'] == '0':
+                            em = discord.Embed(title="{}, 새로 추가할 커맨드의 이름과 링크를 설정하세요.".format(kwargs['author'].nick)
+                            , description='지금은 -는 붙이지 말도록 하세요. 명령어의 최대 길이는 10자, 파일 확장자는 jpg, gif, png만 허용됩니다.\n[예시] 피카츄 http://gobo.ziding/test.gif'
+                            , colour=0xd4eff6)
+                            em.set_footer(text=':exclamation: 취소하려면 아무거나 치도록 하세요.')
+                            return em, 2
 
+                        elif kwargs['phase'] == '1':
+                            cursor = await db.execute("SELECT * FROM SImage WHERE initializer={} COLLATE NOCASE".format(kwargs['detail'].split()[0].replace('-', '')))
+                            sigtemp = await cursor.fetchone()
+                            if len(kwargs['detail'].split()) != 2:
+                                em = discord.Embed(title="{}, 이상한걸 넣지 말아주세요.".format(kwargs['author'].nick), colour=0xd4eff6)
+                            elif len(kwargs['detail'].split()[0]) > 10:
+                                em = discord.Embed(title="{}, 명령어가 너무 깁니다. 10자 이하로 줄여서 다시 해주세요.".format(kwargs['author'].nick), colour=0xd4eff6)
+                            elif (len(kwargs['detail'].split()[0]) == 1) and (str(kwargs['detail'].split()[0]).isalpha() == True):
+                                em = discord.Embed(title="{} 왜구련아".format(kwargs['author'].nick), colour=0xd4eff6)
+                            elif sigtemp:
+                                em = discord.Embed(title="{}, 이미 그 이름으로 등록된 커맨드가 존재해요.".format(kwargs['author'].nick)
+                                                , description='~~[-리스트] 를 입력해 현재 등록된 리스트를 확인한 후~~삭제됨, 처음부터 다시 시도해주세요.', colour=0xd4eff6)
+                            else:
+                                em = await sp.addsig(author=kwargs['author'], detail=kwargs['detail'], price=price)
+                            return em, 0
 
-                em = discord.Embed(title=kwargs['author'].name + "(ID: " + kwargs['author'].id + ") 등록일자: " + sptemp[3], description='```python\n현재 보유 슈포인트: {:,}pt```'.format(sptemp[1]), colour=0x07ECBA)
-                em.add_field(name = '**[옵션 넘버][소모되는 포인트] 각 옵션 설명 및 명칭 **', value = '선택가능한 각 옵션의 설명입니다.')
-                em.add_field(name = '[1][{}pt] 신규 짤 등록 - 현재까지 추가한 짤: {}개'.format(str(price), str(prereg_cnt)), value = '-로 시작하는 짤 명령어목록에 신규 명령어를 추가할 수 있습니다. 가격은 기존 등록짤 수에따라 상승합니다.')
-                em.add_field(name = '[2][5pt] 기존 짤 삭제', value = "자신이 등록한 짤 하나를 삭제할 수 있습니다.")
-                em.add_field(name = '[3][100pt] 숏 소드 신규 발급', value = '테러방지 수단을 입수할 수 있습니다.')
-                em.add_field(name = '[4][500pt] 셀펠매 탈출권', value = '셀프펠라매니아 상태의 남은 기간에 상관 없이 즉시 벗어날 수 있습니다.')
-                em.add_field(name = '[5][1,000pt] 다른 마을로의 이주', value = '정해진 색상 내에서 유저 한 명의 색을 바꿀 수 있습니다.')
-                em.add_field(name = '[6][20,000pt] 신규 마을 생성권', value = '새로운 마을사람 등급을 생성합니다. 생성과 동시에 해당 마을으로 이주하게 됩니다.')
-                em.add_field(name = '[7] 관두자', value = '그래')
-                em.set_footer(text='몇 번으로 할까? 숫자만 입력하세요. 60초가 주어집니다.')
-                return em, 1
-
-        else:
-            sptemp = cursor.execute("SELECT * FROM SHUPoint WHERE id='"+str(kwargs['author'].id)+"' COLLATE NOCASE").fetchone()
-            if kwargs['selection'] == '1':
-                if sptemp[1] >= price:
-                    if kwargs['phase'] == '0':
-                        em = discord.Embed(title=kwargs['author'].name + ', 새로 추가할 커맨드의 이름과 링크를 설정하시기 바랍니다.', description='-는 붙이지 말도록 하세요. 명령어의 최대 길이는 한영수불문 10자, 파일 확장자는 jpg, gif, png만 허용됩니다.\n[예시] 테스트 http://gozi.boding/test.gif', colour=0xd4eff6)
-                        em.set_footer(text='취소하려면 "취소"를 담아 아무거나 입력하기 바랍니다.')
-                        return em, 2
-                    elif kwargs['phase'] == '1':
-                        sigtemp = cursor.execute("SELECT * FROM SImage WHERE initializer='"+kwargs['detail'].split()[0].replace('-', '')+"' COLLATE NOCASE").fetchone()
-                        if len(kwargs['detail'].split()) != 2:
-                            em = discord.Embed(title=kwargs['author'].name + ', 입력한 내용에 문제가 있어 취소되었습니다.', colour=0xd4eff6)
-                        elif len(kwargs['detail'].split()[0]) > 10:
-                            em = discord.Embed(title=kwargs['author'].name + ', 명령어가 너무 깁니다. 10자 이하로 제한해주세요.', colour=0xd4eff6)
-                        elif (len(kwargs['detail'].split()[0]) == 1) and (str(kwargs['detail'].split()[0]).isalpha() == True):
-                            em = discord.Embed(title=kwargs['author'].name + ' 왜구련아', colour=0xd4eff6)
-                        elif sigtemp != None:
-                            em = discord.Embed(title=kwargs['author'].name + ', 이미 그 이름으로 등록된 커맨드가 존재합니다.', description='[-리스트] 를 입력해 현재 등록된 리스트를 확인한 후, 처음부터 다시 시도해주세요.', colour=0xd4eff6)
                         else:
-                            em = await sp.addsig(cursor, author=kwargs['author'], detail=kwargs['detail'], price=price)
-                            db.commit()
-                            db.close()
-                        return em, 0
+                            return embed_cancel, 0
+
                     else:
-                        em = discord.Embed(title=kwargs['author'].name + ', 취소되었습니다.', colour=0xd4eff6)
-                        return em, 0
+                        return embed_nofund, 0
 
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
-                    return em, 0
+                elif kwargs['selection'] == '2':
+                    if sptemp[1] >= 5:
+                        if kwargs['phase'] == '0':
+                            cursor = await db.execute("SELECT * FROM SImage WHERE registrator = {}".format(kwargs['author'].id))
+                            reg = await cursor.fetchall()
+                            prereg_list = await codeblock(' '.join(map(lambda x: x[1], prereg_list)))
+                            em = discord.Embed(title="{}, 삭제할 짤의 이름을 말하세요".format(kwargs['author'].nick)
+                                                , description='당신이 지금까지 등록한 리스트입니다.\n{}\n당연하지만 자신이 등록한 것만 가능하니까 주의하세요\n[예시] 캬루10'.format(prereg_list)
+                                                , colour=0xd4eff6)
+                            em.set_footer(text=':exclamation: 취소하려면 "취소"를 담아 아무거나 입력하세요.')
+                            return em, 'sel2p2'
 
-            elif kwargs['selection'] == '2':
-                if sptemp[1] >= 5:
-                    if kwargs['phase'] == '0':
-                        prereg_list = '```python\n'
-                        reg = cursor.execute("SELECT * FROM SImage WHERE registrator = {}".format(kwargs['author'].id)).fetchall()
-                        for i in reg:
-                            prereg_list += i[1] + ' '
-                        prereg_list += '```'
-                        em = discord.Embed(title=kwargs['author'].name + ', 삭제할 짤의 이름을 지정하기 바랍니다', description='당신이 지금까지 등록한 리스트입니다.' + prereg_list + '\n당연하지만 자신이 등록한 것만 가능하니까 주의\n[예시] Oohyyoucandanceyoucanjivehavingthetimeofyourlifeoohseethatgirlwatchthatscenediginthedancingqueen~ ', colour=0xd4eff6)
-                        em.set_footer(text='취소하려면 "취소"를 담아 아무거나 입력하기 바랍니다.')
-                        return em, 'sel2p2'
-                    elif kwargs['phase'] == '1':
+                        elif kwargs['phase'] == '1':
+                            cursor = await db.execute("SELECT * FROM SImage WHERE initializer={} COLLATE NOCASE".format(kwargs['detail'].split()[0].replace('-', '')))
+                            sigtemp = await cursor.fetchone()
+                            if len(kwargs['detail'].split()) != 1:
+                                em = discord.Embed(title='{}, 입력한 내용에 문제가 있어 취소되었습니다.'.format(kwargs['author'].nick), colour=0xd4eff6)
+                            elif not sigtemp:
+                                em = discord.Embed(title='{}, 확인 결과 그 이름으로 등록된 커맨드가 없습니다.'.format(kwargs['author'].nick)
+                                                    , description='~~[-리스트] 를 입력해 현재 등록된 리스트를 확인한 후~~삭제됨, 처음부터 다시 시도해주세요.', colour=0xd4eff6)
+                            elif sigtemp[4] != kwargs['author'].id:
+                                em = discord.Embed(title='{}, 당신이 등록한 짤이 아닌 것 같습니다. 재확인해주세요.'.format(kwargs['author'].nick), colour=0xd4eff6)
+                            else:
+                                em = await sp.delsig(author=kwargs['author'], detail=kwargs['detail'])
+                            return em, 0
 
-                        sigtemp = cursor.execute("SELECT * FROM SImage WHERE initializer='"+kwargs['detail'].split()[0].replace('-', '')+"' COLLATE NOCASE").fetchone()
-                        if len(kwargs['detail'].split()) != 1:
-                            em = discord.Embed(title=kwargs['author'].name + ', 입력한 내용에 문제가 있어 취소되었습니다.', colour=0xd4eff6)
-                        elif sigtemp == None:
-                            em = discord.Embed(title=kwargs['author'].name + ', 확인 결과 그 이름으로 등록된 커맨드가 없습니다.', description='[-리스트] 를 입력해 현재 등록된 리스트를 확인한 후, 처음부터 다시 시도해주세요.', colour=0xd4eff6)
-                        elif sigtemp[4] != kwargs['author'].id:
-                            em = discord.Embed(title=kwargs['author'].name + ', 당신이 등록한 짤이 아닌 것 같습니다. 재확인해주세요.', colour=0xd4eff6)
                         else:
-                            em = await sp.delsig(cursor, author=kwargs['author'], detail=kwargs['detail'])
-                            db.commit()
-                            db.close()
+                            return embed_cancel, 0
+                    else:
+                        return embed_nofund, 0
+
+                elif kwargs['selection'] == '3':
+                    if sptemp[1] >= 100:
+                        em = await sp.ssword(author=kwargs['author'])
                         return em, 0
                     else:
-                        em = discord.Embed(title=kwargs['author'].name + ', 취소되었습니다.', colour=0xd4eff6)
-                        return em, 0
+                        return embed_nofund, 0
 
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
-                    return em, 0
-
-            elif kwargs['selection'] == '3':
-                if sptemp[1] >= 100:
-                    em = await sp.ssword(cursor, author=kwargs['author'])
-                    db.commit()
-                    db.close()
-                    return em, 0
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
-                    return em, 0
-
-            elif kwargs['selection'] == '4':
-                if sptemp[1] >= 500:
-                    em = await sp.escape(cursor, author=kwargs['author'])
-                    db.commit()
-                    db.close()
-                    return em, 0
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
-                    return em, 0
-
-            elif kwargs['selection'] == '5':
-                if sptemp[1] >= 1000:
-                    if kwargs['phase'] == '0':
-                        em = discord.Embed(title=kwargs['author'].name + ', 이주할 색상을 고르시기 바랍니다. 이하의 선택지 외에는 선택 불가능하며 철회는 불가능합니다.', colour=0x07ECBA)
-                        em.set_image(url='https://cdn.discordapp.com/attachments/415417437916495872/454124723140296719/Untitled-3.png')
-                        em.set_footer(text='취소하려면 선택지가 아닌 아무거나 입력하시기 바랍니다.')
-                        return em, 'immigrate'
-                    elif kwargs['phase'].isdigit() and int(kwargs['phase']) == 1 and int(kwargs['detail']) in range(1,19):
-                        em = discord.Embed(title=kwargs['author'].name + ', 대상의 아이디넘버를 입력하시기 바랍니다.', description='아이디넘버는 설정에서 개발자 모드를 활성화 시킨 후\n대상을 우클릭 시 나오는 드랍다운 메뉴에서 복사할 수 있습니다.\n\n당신의 넘버는 {} 입니다.'.format(
-                            kwargs['author'].id), colour=0x07ECBA)
-                        return em, 'immigrate', str(kwargs['detail'])
-                    elif kwargs['phase'].isdigit() and int(kwargs['phase']) == 2 and int(kwargs['detail']) in range(1,19):
-                        em = await sp.immigrate(cursor, author=kwargs['author'], target=kwargs['target'], choice=kwargs['detail'])
-                        db.commit()
-                        db.close()
+                elif kwargs['selection'] == '4':
+                    if sptemp[1] >= 1000:
+                        em = await sp.escape(author=kwargs['author'])
                         return em, 0
                     else:
-                        em = discord.Embed(title=kwargs['author'].name + ', 취소되었습니다.', colour=0xd4eff6)
-                        return em, 0
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
-                    return em, 0
+                        return embed_nofund, 0
 
-            elif kwargs['selection'] == '6':
-                if sptemp[1] >= 20000:
-                    if kwargs['phase'] == '0':
-                        em = discord.Embed(title=kwargs['author'].name + ', 이주할 색상을 고르시기 바랍니다. 이하의 선택지 외에는 선택 불가능하며 철회는 불가능합니다.', colour=0x07ECBA)
+                elif kwargs['selection'] == '5':
+                    color_max = 18
+                    if sptemp[1] >= 1000:
+                        if kwargs['phase'] == '0':
+                            em = discord.Embed(title='{}, 원하는 색상을 고르세요. 이하의 선택지 외에는 선택 불가능하며 환불은 택도 없으니 신중하게 하세요'.format(kwargs['author'].nick)
+                                                , colour=0x07ECBA)
+                            em.set_image(url='https://cdn.discordapp.com/attachments/415417437916495872/454124723140296719/Untitled-3.png')
+                            em.set_footer(text=':exclamation: 취소하려면 선택지가 아닌 아무거나 입력하세요.')
+                            return em, 'immigrate'
+
+                        elif kwargs['phase'].isdigit() and int(kwargs['phase']) == 1 and int(kwargs['detail']) in range(1,19):
+                            em = discord.Embed(title='{}, 대상의 아이디를 입력하시기 바랍니다.'.format(kwargs['author'].nick)
+                                            , description='아이디는 설정에서 개발자 모드를 활성화 시킨 후\n대상을 우클릭 시 나오는 드랍다운 메뉴에서 복사할 수 있습니다.\n\n당신의 코드는 {} 입니다.'.format(kwargs['author'].id)
+                                            , colour=0x07ECBA)
+                            return em, 'immigrate', str(kwargs['detail'])
+
+                        elif kwargs['phase'].isdigit() and int(kwargs['phase']) == 2 and int(kwargs['detail']) in range(1,color_max+1):
+                            em = await self.immigrate(author=kwargs['author'], target=kwargs['target'], choice=kwargs['detail'])
+                            return em, 0
+                        else:
+                            return embed_cancel, 0
+                    else:
+                        return embed_nofund, 0
+
+                elif kwargs['selection'] == '6':
+                    if sptemp[1] >= 20000:
+                        em = discord.Embed(title="{}, 축하해요 관리자를 부르세요!", colour=0x07ECBA)
                         em.set_image(url='https://cdn.discordapp.com/attachments/296519249134878720/397222940292284417/Untitled-2.jpg')
-                        em.set_footer(text='취소하려면 선택지가 아닌 아무거나 입력하시기 바랍니다.')
-                        return em, 1
-                    elif kwargs['phase'].isdigit() and int(kwargs['phase']) in range(1,6):
-                        em = await sp.immigrate(cursor, author=kwargs['author'], choice=kwargs['phase'])
-                        db.commit()
-                        db.close()
                         return em, 0
                     else:
-                        em = discord.Embed(title=kwargs['author'].name + ', 취소되었습니다.', colour=0xd4eff6)
-                        return em, 0
-                else:
-                    em = discord.Embed(title=kwargs['author'].name + '님, [넥센]이시네요 ㅅㄱ', colour=0xd4eff6)
+                        return embed_nofund, 0
+
+                elif kwargs['selection'] == '7':
+                    em = discord.Embed(title='구랭.', colour=0x07ECBA)
                     return em, 0
 
-            elif kwargs['selection'] == '7':
-                em = discord.Embed(title='구랭.', colour=0x07ECBA)
-                return em, 0
-            else:
-                em = discord.Embed(title=kwargs['author'].name + ', 취소되었습니다.', colour=0xd4eff6)
-                return em, 0
+                else:
+                    return embed_cancel, 0
 
     async def ssword(*args, **kwargs):
         spsschk = 0
