@@ -1,3 +1,3 @@
 # EURIKA_NEXT
-A multi-purpose chat bot for discord.
+A multi-purpose chat advisor
 
