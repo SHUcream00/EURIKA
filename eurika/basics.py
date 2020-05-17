@@ -58,6 +58,13 @@ async def jaegi():
         async with aiohttp.ClientSession() as session:
             return json.loads(await jaegi.text())['temp']
 
+async def cex(*args):
+    curdict = {'원':'KRW', '위안': 'CNY', '파운드': 'GBP', '유로': 'EUR', '달러': 'USD', '엔': 'JPY', '홍콩달러': 'HKD', '레알': 'BRL',
+                '캐나다달러': 'CAD', '스위스프랑': 'CHF', '인도네시아루피': 'IDR', '페소': 'MXN', '필리핀페소': 'PHP', '레우': 'RON', '크로네': 'NOK',
+                '포린트': 'HUF', '쿠나': 'HRK', '즈워티': 'PLN', '루피': 'INR', '링깃': 'MYR', '크로나': 'SEK', '루블': 'RUB', '싱가포르달러': 'SGD',
+                '바트': 'THB', '리라': 'TRY', '랜드': 'ZAR', '달러': 'USD'}
+    pass
+
 async def upside_dn(alnum: str):
     #unfinished - unicode related problem
     '''Prints text upside down, should be alphabet or arabic numbers'''
@@ -86,15 +93,17 @@ async def sig_n(key = None, **kwargs):
 
 async def keep_sig_integrity(link):
     '''Background task to make sure image is still up'''
-    async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
-        async with db.execute("SELECT * FROM SImage where cache != NULL") as cursor:
-            targets = await cursor.fetchall()
-            for i in targets:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(deadlink) as resp:
-                        if resp.status in range(400,405) or (resp.headers["content-type"] in ["image/png", "image/jpeg", "image/jpg"]) == False:
-                            await db.execute("UPDATE SImage SET cache=NULL Where initializer=?", i[1])
-            await db.commit()
+    while True:
+        async with aiosqlite.connect(cwd + '\db\EurDB.db') as db:
+            async with db.execute("SELECT * FROM SImage where cache != NULL") as cursor:
+                targets = await cursor.fetchall()
+                for i in targets:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(deadlink) as resp:
+                            if resp.status in range(400,405) or (resp.headers["content-type"] in ["image/png", "image/jpeg", "image/jpg"]) == False:
+                                await db.execute("UPDATE SImage SET cache=NULL Where initializer=?", i[1])
+                await db.commit()
+        await asyncio.sleep(144000)
 
 
 async def updatesig_n(link = None, name = None, **kwargs):
