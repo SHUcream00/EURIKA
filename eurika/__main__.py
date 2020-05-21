@@ -85,6 +85,29 @@ async def on_message(msg):
                 await client.user.edit(avatar=indata)
                 await msg.channel.send("It shall be done")
 
+    if msg.content.startswith("=선택"):
+        try:
+            ctx = str(await rand_select(msg.content.split()[1:]))
+            em = discord.Embed(description="ㅤ\n**{}**\nㅤ".format(ctx.center(13, "ㅤ")), color=color_def)
+            em.set_footer(text=f"{client.user.display_name}님의 신탁")
+            em.set_thumbnail(url=client.user.avatar_url)
+            await msg.channel.send(embed=em)
+
+        except Exception as e:
+            print("RANDSELECT ERROR", repr(e))
+            pass
+
+    if msg.content.startswith("=우선순위"):
+        try:
+            em = discord.Embed(description=await ordered_select(msg.content.split()[1:]), color=color_def)
+            em.set_footer(text=f"{client.user.display_name}님의 신탁")
+            em.set_thumbnail(url=client.user.avatar_url)
+            await msg.channel.send(embed=em)
+
+        except Exception as e:
+            print("ORDSELECT ERROR", repr(e))
+            pass
+
     if msg.content.startswith('Memory'):
         if msg.count(chr(32)) < 2:
             pass #raiseerror
