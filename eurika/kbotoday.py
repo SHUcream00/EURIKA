@@ -5,6 +5,7 @@ import aiosqlite
 import aiohttp
 import time
 import datetime
+import json
 
 cwd = r'C:\EurikaMkIII' #fallback
 
@@ -145,40 +146,42 @@ async def player(*args, **kwargs):
         for i in kbotgt:
             photo_prefix = "https:"
             if i[5] == time.strftime('%Y-%m-%d'):
-                html = i[6]
+                temp = json.loads(i[6])
             else:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"http://www.koreabaseball.com/Record/Player/{i[3]}Detail/Basic.aspx?playerId={i[2]}") as resp:
                         html = await resp.text()
-                        await db.execute("UPDATE Players SET last_checked='{}', cache='{}' Where id='{}'".format(time.strftime('%Y-%m-%d'), html.replace(chr(39),""), i[2]))
-                        await db.commit()
 
-            soup = bs(html, 'lxml')
-            stat_title = list(map(lambda x: x.getText().lower(), sum([tr.find_all('th') for tr in soup.find_all('thead', limit=2)], [])))
-            stat_data = list(map(lambda x: x.getText(), sum([tr.find_all('td') for tr in soup.find_all('tbody', limit=2)], [])))
-            temp = {i: j for i, j in zip(stat_title, stat_data)}
-            temp['type'] = i[3]
-            temp['name'] = kwargs['name']
-            temp['backno'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblBackNo").getText()
-            temp['birth'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblBirthday").getText()
-            temp['from_bt'] = divmod((datetime.datetime.now() - datetime.datetime.strptime('-'.join(re.findall(r'\d+', temp['birth'])), "%Y-%m-%d")).days, 365)
-            temp['pos'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblPosition").getText()
-            temp['pic'] = "https:" + soup.find(id="cphContents_cphContents_cphContents_playerProfile_imgProgile")['src']
-            temp['nick'] = i[4]
-            if temp['팀명'] != "기록이 없습니다.":
-                temp['active'] = True
-                if temp['type'] == 'Pitcher':
-                    temp['ip_f'] = eval(temp['ip'].replace(chr(32), chr(43)))
-                    #FIP (13*HR+3*(HBP+BB)-2*K)/IP, plus a constant (usually around 3.2) to put it on the same scale as earned run average.
-                    temp['fip'] = round((13 * int(temp['hr']) + 3 * int(temp['bb']) - 2 * int(temp['so'])) /temp['ip_f'] + 3.3, 2)
-                    temp['babip'] = round((int(temp['h'])-int(temp['hr']))/(int(temp['tbf']) - int(temp['sac']) + int(temp['sf']) -int(temp['bb']) - int(temp['ibb'])-int(temp['so'])-int(temp['hr'])),3)
-                else:
-                    temp['babip'] = round((int(temp['h'])-int(temp['hr']))/(int(temp['ab']) - int(temp['sac']) + int(temp['sf']) - int(temp['so']) - int(temp['hr'])),3)
-                    temp['woba'] = round((0.690 * (int(temp['bb'])-int(temp['ibb'])) + 0.722 * int(temp['hbp']) + 0.888 * (int(temp['h']) - int(temp['2b']) - int(temp['3b']) - int(temp['hr']))\
-                                    + 1.271 * int(temp['2b']) + 1.616 * int(temp['3b']) + 2.101 * int(temp['hr'])) / (int(temp['ab']) + int(temp['bb']) - int(temp['ibb'])  + int(temp['sf']) + int(temp['hbp'])),3)
-            else:
-                temp['팀명'] = "무소속"
-                temp['active'] = False
+                    soup = bs(html, 'lxml')
+                    stat_title = list(map(lambda x: x.getText().lower(), sum([tr.find_all('th') for tr in soup.find_all('thead', limit=2)], [])))
+                    stat_data = list(map(lambda x: x.getText(), sum([tr.find_all('td') for tr in soup.find_all('tbody', limit=2)], [])))
+                    temp = {i: j for i, j in zip(stat_title, stat_data)}
+                    temp['type'] = i[3]
+                    temp['name'] = kwargs['name']
+                    temp['backno'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblBackNo").getText()
+                    temp['birth'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblBirthday").getText()
+                    temp['from_bt'] = divmod((datetime.datetime.now() - datetime.datetime.strptime('-'.join(re.findall(r'\d+', temp['birth'])), "%Y-%m-%d")).days, 365)
+                    temp['pos'] = soup.find(id="cphContents_cphContents_cphContents_playerProfile_lblPosition").getText()
+                    temp['pic'] = "https:" + soup.find(id="cphContents_cphContents_cphContents_playerProfile_imgProgile")['src']
+                    temp['nick'] = i[4]
+                    employer = soup.find("h4", {"class": lambda x: x and x.startswith('team regular')})
+                    temp['teamname'] = employer.getText() if employer else "무소속"
+                    if temp['팀명'] != "기록이 없습니다.":
+                        temp['active'] = True
+                        if temp['type'] == 'Pitcher':
+                            temp['ip_f'] = eval(temp['ip'].replace(chr(32), chr(43)))
+                            #FIP (13*HR+3*(HBP+BB)-2*K)/IP, plus a constant (usually around 3.2) to put it on the same scale as earned run average.
+                            temp['fip'] = round((13 * int(temp['hr']) + 3 * int(temp['bb']) - 2 * int(temp['so'])) /temp['ip_f'] + 3.3, 2)
+                            temp['babip'] = round((int(temp['h'])-int(temp['hr']))/(int(temp['tbf']) - int(temp['sac']) + int(temp['sf']) -int(temp['bb']) - int(temp['ibb'])-int(temp['so'])-int(temp['hr'])),3)
+                        else:
+                            temp['babip'] = round((int(temp['h'])-int(temp['hr']))/(int(temp['ab']) - int(temp['sac']) + int(temp['sf']) - int(temp['so']) - int(temp['hr'])),3)
+                            temp['woba'] = round((0.690 * (int(temp['bb'])-int(temp['ibb'])) + 0.722 * int(temp['hbp']) + 0.888 * (int(temp['h']) - int(temp['2b']) - int(temp['3b']) - int(temp['hr']))\
+                                            + 1.271 * int(temp['2b']) + 1.616 * int(temp['3b']) + 2.101 * int(temp['hr'])) / (int(temp['ab']) + int(temp['bb']) - int(temp['ibb'])  + int(temp['sf']) + int(temp['hbp'])),3)
+                    else:
+                        temp['active'] = False
+
+                    await db.execute("UPDATE Players SET last_checked='{}', cache='{}' Where id='{}'".format(time.strftime('%Y-%m-%d'), json.dumps(temp), i[2]))
+                    await db.commit()
 
             res.append(temp)
 
@@ -186,35 +189,21 @@ async def player(*args, **kwargs):
 
 async def kakasi(**kwargs):
     async with aiosqlite.connect(cwd + "\db\EurKBODB.db") as db:
-
-        no_updated = 0
-        id_no = ''
-        position = ''
         async with aiohttp.ClientSession() as session:
             async with session.get('https://www.koreabaseball.com/Player/Search.aspx?searchWord={}'.format(kwargs['name'])) as kbocs:
                 kbohtml = await kbocs.text()
                 soup = bs(kbohtml, 'lxml')
-                for i in soup.find_all('tr')[1:]:
-                    retired = 0
-                    for j in i.find_all('a'):
-                        id_no = j['href'].split('=')[1]
-                        if 'Retire' in j['href']:
-                            retired = 1
-                    for k, l in enumerate(i.find_all('td')):
-                        if k == 3:
-                            text = l.get_text()
-                            if text == '투수':
-                                position = 'Pitcher'
-                            else:
-                                position = 'Hitter'
-                    if retired == 0:
-                        await db.execute("INSERT INTO Players (id, name, type, nick) VALUES (?, ?, ?, ?)",
-                                      (id_no, kwargs['name'], position, ''))
-                        no_updated += 1
+                for i in soup.find('tbody').find_all('tr'):
+                    base = list(map(lambda x: x.getText(), i.findChildren()))
+                    if base[0] == "#":
+                        continue
+                    elif base[1] == kwargs['name']:
+                        link = i.find('a')['href']
+                        id_ = link.split("=")[1]
+                        pos = "Pitcher" if base[4] == "투수" else "Hitter"
+                        await db.execute(f"INSERT INTO Players (id, name, type, nick) VALUES ('{id_}', '{base[1]}', '{pos}', '')")
 
         await db.commit()
-        return no_updated
-
 
 def tdrem(a):
     return str(a).strip('<td/>')
