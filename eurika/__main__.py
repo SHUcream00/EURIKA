@@ -170,6 +170,28 @@ async def on_message(msg):
 
             await msg.channel.send("ㅗ")
 
+    #Youtube module 200524
+    if msg.content.startswith('=유튜브'):
+        #try:
+        args = msg.content.split()
+        if len(args) >= 2:
+            res = ""
+            string = " ".join(args[1:])
+            videos = await youtube_vid(query=string, max=5)
+            for i in videos[:5]:
+                res += f"[{i['snippet']['title'][:25] + '...'}]({'https://www.youtube.com/watch?v=' + i['id']['videoId']})\n"\
+                        + f":tv: [**{i['snippet']['channelTitle']}**]({'https://www.youtube.com/channel/' + i['snippet']['channelId']}) on {i['snippet']['publishedAt'].split('T')[0]}\n\n"
+            em = discord.Embed(title=string, description=res, color=0xFF0000)
+            em.set_image(url=videos[0]['snippet']['thumbnails']['high']['url'])
+            em.set_author(name="YouTube on EURIKA", icon_url = "https://cdn.discordapp.com/attachments/695373167627337859/714386374899400734/3721679-youtube_108064.png")
+            await msg.channel.send(embed = em)
+
+        '''
+        except Exception as e:
+            print("Youtube Error:", repr(e))
+        '''
+
+
     if msg.content.startswith('=2빠따'):
         def codeblock(text):
             '''return text wrapped up in python codeblock for discord'''
