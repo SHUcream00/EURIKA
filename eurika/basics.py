@@ -8,6 +8,7 @@ import ast
 import string
 import aiosqlite
 import collections
+from bs4 import BeautifulSoup as bs
 import json
 from math import *
 
@@ -263,27 +264,3 @@ async def bitly(**kwargs):
                         await db.commit()
 
                 return blyres
-
-async def namu(name):
-    title, res = collections.OrderedDict(), collections.OrderedDict()
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://namu.wiki/w/{name}") as resp:
-            raw = await resp.text()
-            soup = bs(raw, "lxml") #soup.find_all("div", {"data-v-82ad9f9a": ""})[1].find_all("div")
-            for l in soup.find_all("span", {"class": "toc-item"}):
-                num, text = l.get_text().split(chr(32), 1)
-                if len(num.split(chr(46))) == 1:
-                    title[num] = text
-                else:
-                    title[num] = text
-                    if title.get(chr(46).join(num.split(chr(46))[:num.count(chr(46))-1]) + chr(46), False):
-                        del title[chr(46).join(num.split(chr(46))[:num.count(chr(46))-1]) + chr(46)]
-            title = list(title.values())
-            for i, j in enumerate(soup.find_all("a", {"title": lambda x: x and name in x})):
-                temp = {}
-                temp['description'] = title[i]
-                temp['name'] = j['title']
-                temp['src'] = "https://namu.wiki" + j['href']
-                res[i] = temp
-
-            return res
