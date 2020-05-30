@@ -57,25 +57,23 @@ async def cex(amnt, cur_fr, cur_to, comp=''):
                 '포린트': 'HUF', '쿠나': 'HRK', '즈워티': 'PLN', '루피': 'INR', '링깃': 'MYR', '크로나': 'SEK', '루블': 'RUB', '싱가포르달러': 'SGD',
                 '바트': 'THB', '리라': 'TRY', '랜드': 'ZAR', '달러': 'USD'}
     cexchecker = re.compile('\d+(\.\d+)?')
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://data.fixer.io/api/latest?access_key=8572d46f86bde368626be482bc7cc50f") as cexhtml: #curdict[cur_fr]
-                cexbase = json.loads(await cexhtml.text())['rates']
-                basecur = curdict[cur_fr]
-                if comp != '':
-                    if cexchecker.match(comp):
-                        if (round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3) > 0):
-                            em = discord.Embed(title=f'{amnt} {cur_fr} => {cur_to} 환전 결과 (비교 대상: {comp} {cur_to})',
-                            description= f'{amnt} {cur_fr}(이)가 {str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3)) + cur_to} 만큼 더 비쌈', colour = 0x07ECBA)
-                        else:
-                            em = discord.Embed(title=f'{amnt} {cur_fr} => {cur_to} 환전 결과 (비교 대상: {comp} {cur_to})',
-                            description= f'{amnt} {cur_to}(이)가 {str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3)) + cur_to} 만큼 더 비쌈', colour = 0x07ECBA)
-                else:
-                    res = round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]],3)
-                    em = discord.Embed(title=f'{amnt}{cur_fr} => {cur_to} 환전 결과'
-                                        , description= f":money_with_wings: {res:,}{cur_to}", colour = 0x07ECBA)
-                if (cur_fr == '달러' or cur_to == '달러') and (float(amnt) == 4 or str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]],3)).split('.')[0] == '4'):
-                    em.set_image(url='https://cdn.discordapp.com/attachments/192692517827772417/345061938901811200/7798b46504e4a060.jpg')
-    except:
-        em = discord.Embed(title='난토! 에러가 났네요!', description = '[예시]\n=환율 (액수) (현재화폐) (바꿀화폐)\n혹은\n=환율 (액수) (현재화폐) (바꿀화폐) (비교액수)\n[사용가능한 화폐종류]\n' + ' '.join(curdict.items()), colour=0xB5002B)
+    async with aiohttp.ClientSession() as session:
+        async with session.get("http://data.fixer.io/api/latest?access_key=8572d46f86bde368626be482bc7cc50f") as cexhtml: #curdict[cur_fr]
+            cexbase = json.loads(await cexhtml.text())['rates']
+            basecur = curdict[cur_fr]
+            if comp != '':
+                if cexchecker.match(comp):
+                    if (round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3) > 0):
+                        em = discord.Embed(title=f'{amnt} {cur_fr} => {cur_to} 환전 결과 (비교 대상: {comp} {cur_to})',
+                        description= f'{amnt} {cur_fr}(이)가 {str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3)) + cur_to} 만큼 더 비쌈', colour = 0x07ECBA)
+                    else:
+                        em = discord.Embed(title=f'{amnt} {cur_fr} => {cur_to} 환전 결과 (비교 대상: {comp} {cur_to})',
+                        description= f'{amnt} {cur_to}(이)가 {str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]] - float(comp),3)) + cur_to} 만큼 더 비쌈', colour = 0x07ECBA)
+            else:
+                res = round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]],3)
+                em = discord.Embed(title=f'{amnt}{cur_fr} => {cur_to} 환전 결과'
+                                    , description= f":money_with_wings: {res:,}{cur_to}", colour = 0x07ECBA)
+            if (cur_fr == '달러' or cur_to == '달러') and (float(amnt) == 4 or str(round(float(amnt) / cexbase[curdict[cur_fr]] * cexbase[curdict[cur_to]],3)).split('.')[0] == '4'):
+                em.set_image(url='https://cdn.discordapp.com/attachments/192692517827772417/345061938901811200/7798b46504e4a060.jpg')
+
     return em
