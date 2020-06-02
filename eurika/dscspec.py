@@ -4,20 +4,20 @@ mostly for channel management to avoid writing long blahblahs in the original fi
 '''
 
 import discord
-import aiosqlite
 import json
 import datetime
+import aiohttp
 import asyncio
 import re
 from point import *
-from basics import get_alarm, time_to_sec, codeblock
-from essentials import translate
-from ext import cuckoo
+from basics import get_alarm, time_to_sec
+
 
 async def restart_alarm(client):
     cur_alarms = await get_alarm()
     for i in cur_alarms:
         client.loop.create_task(restarted_alarm(client, *i))
+
 
 async def restarted_alarm(client, *args):
     time_offset = (datetime.datetime.strptime(args[2], "%Y-%m-%d %H:%M:%S") - datetime.datetime.now()).total_seconds()
@@ -25,6 +25,7 @@ async def restarted_alarm(client, *args):
     user = await client.fetch_user(args[1])
     await asyncio.sleep(time_offset)
     await channel.send(f"{user.mention}, {args[3]} 시간이야")
+
 
 async def get_info(username, joinchan):
     '''Get current shupoint, created date, joined date to show together.'''
@@ -35,14 +36,17 @@ async def get_info(username, joinchan):
     em.set_thumbnail(url=message.author.avatar_url)
     await client.send_message(message.channel, embed=em)
 
+
 async def shinan(client, msg, timestring, target):
-    em = discord.Embed(title=f'천사의 섬 행 비행기가 출발하는구리!'
-                    , description= f'{target.mention}, {timestring}동안 잘 지내는구리', colour=0x07ECBA)
+    em = discord.Embed(title='천사의 섬 행 비행기가 출발하는구리!'
+                        , description= f'{target.mention}, {timestring}동안 잘 지내는구리'
+                        , colour=0x07ECBA)
     await msg.channel.send(embed=em)
     seconds = await time_to_sec(timestring)
     prv_roles = target.roles
     roles = []
-    roles.append(client.get_guild(88844446929547264).get_role(295021155042197514))
+    roles.append(client.get_guild(88844446929547264)
+                .get_role(295021155042197514))
     await target.edit(roles=roles)
     await asyncio.sleep(seconds)
     await target.edit(roles=prv_roles)
@@ -50,6 +54,7 @@ async def shinan(client, msg, timestring, target):
                     , description= f'{target.mention}, 잘 돌아오는구리.', colour=0x07ECBA)
     await msg.channel.send(embed=em)
     return
+
 
 async def cex(amnt, cur_fr, cur_to, comp=''):
     curdict = {'원':'KRW', '위안': 'CNY', '파운드': 'GBP', '유로': 'EUR', '달러': 'USD', '엔': 'JPY', '홍콩달러': 'HKD', '레알': 'BRL',
