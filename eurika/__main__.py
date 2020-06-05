@@ -85,6 +85,27 @@ async def on_message(msg):
                 await client.user.edit(avatar=indata)
                 await msg.channel.send("It shall be done")
 
+#===========================================================================================================
+#Channel management
+    if msg.content.startswith("=닉"):
+        try:
+            split = msg.content.split(chr(32), 1)
+            if len(split) == 1:
+                em = discord.Embed(description="닉 바꿔주는 간이기능.\n[예시]=닉 알바성기", color=color_def)
+                await msg.channel.send(embed=em)
+            else:
+                em = discord.Embed(description=f"닉 변경 완료.\n{msg.author.display_name} => {split[1]}", color=color_def)
+                await msg.author.edit(nick=split[1])
+                await msg.channel.send(embed=em)
+        except Exception as e:
+            print("NICKCHANGE ERROR", repr(e))
+
+    if msg.channel.id in [92580086091366400, 360591565112082443, 509321410053799937]:
+        if (len(msg.attachments) == 0 or msg.author.id == client.user.id) and str(msg.content).split(".")[msg.content.count(".")] not in ["png", "jpg", "gif", "mp4", "mov", "webm", "webp", "gifv"]:
+            await msg.delete()
+
+#===========================================================================================================
+
     if msg.content.startswith("=선택"):
         try:
             ctx = str(await rand_select(msg.content.split()[1:]))
