@@ -43,7 +43,7 @@ async def kbo():
 
 async def standing():
     kboteam = {'SK': '씹솩', 'KT': '꼴콱', 'KIA': '홍어', 'LG': '좆쥐', '두산': '범죄', '롯데': '꼴데',
-               'NC': '입양', '키움': '거지', '한화': '꼴칰', '삼성': '칩성'}
+               'NC': '씨발', '키움': '거지', '한화': '꼴칰', '삼성': '칩성'}
 
     async with aiosqlite.connect(cwd + "\db\EurKBODB.db") as db:
         async with db.execute("SELECT * FROM Etcdata WHERE name='standing' LIMIT 1") as cursor:
@@ -79,7 +79,7 @@ async def standing():
 
 async def stat_leaders(**kwargs):
         kboteam = {'SK': '씹솩', 'KT': '꼴콱', 'KIA': '홍어', 'LG': '좆쥐', '두산': '범죄', '롯데': '꼴데',
-                   'NC': '입양', '키움': '거지', '한화': '꼴칰', '삼성': '칩성'}
+                   'NC': '씨발', '키움': '거지', '한화': '꼴칰', '삼성': '칩성'}
         kbocategory = {'타율': "/Record/Player/HitterBasic/Basic1.aspx?sort=HRA_RT", '홈런': "/Record/Player/HitterBasic/Basic1.aspx?sort=HR_CN"
                 , '타점': "/Record/Player/HitterBasic/Basic1.aspx?sort=RBI_CN", '도루': "/Record/Player/Runner/Basic.aspx?sort=SB_CN"
                 , '득점': "/Record/Player/HitterBasic/Basic1.aspx?sort=RUN_CN", '안타': "/Record/Player/HitterBasic/Basic1.aspx?sort=HIT_CN"
@@ -87,15 +87,20 @@ async def stat_leaders(**kwargs):
                 , '2루타': "/Record/Player/HitterBasic/Basic1.aspx?sort=H2_CN", '3루타': "/Record/Player/HitterBasic/Basic1.aspx?sort=H3_CN"
                 , '루타': "/Record/Player/HitterBasic/Basic1.aspx?sort=TB_CN", 'OPS': "/Record/Player/HitterBasic/Basic2.aspx?sort=OPS_RT"
                 , '타수': "/Record/Player/HitterBasic/Basic1.aspx?sort=AB_CN", '볼넷': "/Record/Player/HitterBasic/Basic2.aspx?sort=BB_CN"
-                , '삼진': "/Record/Player/HitterBasic/Basic2.aspx?sort=KK_CN", '평자점': "/Record/Player/PitcherBasic/Basic1.aspx?sort=ERA_RT"
+                , '삼진': "/Record/Player/HitterBasic/Basic2.aspx?sort=KK_CN", '병살': "/Record/Player/HitterBasic/Basic2.aspx?sort=GD_CN"
+                , '사구': "/Record/Player/HitterBasic/Basic2.aspx?sort=HP_CN", '고의사구': "/Record/Player/HitterBasic/Basic2.aspx?sort=IB_CN"
+                , '멀티히트': "/Record/Player/HitterBasic/Basic2.aspx?sort=MH_HITTER_CN"
+                , '실책': "/Record/Player/Defense/Basic.aspx?sort=ERR_CN", '도루저지': "/Record/Player/Defense/Basic.aspx?sort=CS_RT"
+                , '포일': "/Record/Player/Defense/Basic.aspx?sort=PB_CN"
+                , '평자점': "/Record/Player/PitcherBasic/Basic1.aspx?sort=ERA_RT"
                 , '승리': "/Record/Player/PitcherBasic/Basic1.aspx?sort=W_CN", '세이브': "/Record/Player/PitcherBasic/Basic1.aspx?sort=SV_CN"
                 , '승률': "/Record/Player/PitcherBasic/Basic1.aspx?sort=WRA_RT", '홀드': "/Record/Player/PitcherBasic/Basic1.aspx?sort=HOLD_CN"
                 , '탈삼진': "/Record/Player/PitcherBasic/Basic1.aspx?sort=KK_CN", '경기': "/Record/Player/PitcherBasic/Basic1.aspx?sort=GAME_CN"
                 , '패배': "/Record/Player/PitcherBasic/Basic1.aspx?sort=L_CN", '이닝': "/Record/Player/PitcherBasic/Basic1.aspx?sort=INN2_CN"
                 , '볼넷': "/Record/Player/PitcherBasic/Basic1.aspx?sort=BB_CN", 'WHIP': "/Record/Player/PitcherBasic/Basic1.aspx?sort=WHIP_RT"
                 , '완투': "/Record/Player/PitcherBasic/Basic2.aspx?sort=CG_CN", '완봉': "/Record/Player/PitcherBasic/Basic2.aspx?sort=SHO_CN"
-                , '퀄스': "/Record/Player/PitcherBasic/Basic2.aspx?sort=QS_CN", '피안타율': "/Record/Player/PitcherBasic/Basic2.aspx?sort=OAVG_RT"}
-
+                , '퀄스': "/Record/Player/PitcherBasic/Basic2.aspx?sort=QS_CN", '피안타율': "/Record/Player/PitcherBasic/Basic2.aspx?sort=OAVG_RT"
+                }
 
         if kwargs['category'] not in kbocategory:
             return None
@@ -212,5 +217,6 @@ def tdrem(a):
 #Test Driver
 if __name__ == "__main__":
     a = asyncio.get_event_loop()
-    a.run_until_complete(kbo())
+    x = a.run_until_complete(stat_leaders(category="고의사구"))
+    print(x)
 '''
