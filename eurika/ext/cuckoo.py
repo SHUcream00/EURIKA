@@ -11,13 +11,13 @@ cwd = r'C:\EurikaMkIII' #Do I really need this? can't i use cwd()?
 description = '''Python Twitter wrapper for EURIKA'''
 
 #fgo = 2968069742
-class hototogisu():
+class cuckoobird():
 
     def __init__(self):
-        self.consumer_key="KEY"
-        self.consumer_secret="SECRET"
-        self.access_token="TOKEN"
-        self.access_token_secret="TOKEN_SECRET"
+        self.consumer_key="H3eY1RwLJUknSveNUpaGnG81W"
+        self.consumer_secret="UYbLgyqh29wFzupWViWxpVNvIX8na5cRX24fk4qDc4sfHBLt3Y"
+        self.access_token="3752069838-KDeOEcia3lYjjlN4csSXajF8XwpFumu7ubrcEcH"
+        self.access_token_secret="kOEZByGr0nkVBC4gW8HEJHMdjB8CDOkuafzeo99lawQo2"
 
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
@@ -69,15 +69,3 @@ class hototogisu():
                 await db.commit()
                 #await db.close()
                 return twtres
-
-'''
-if __name__ == "__main__":
-    b = asyncio.get_event_loop()
-    a = hototogisu()
-    b.run_until_complete(a.cry(ID=2968069742))
-
-    async with aiosqlite.connect(cwd + "\db\EurDB.db") as db:
-        async with db.execute("SELECT ID FROM TwitterCache") as cursor:
-            for j in await cursor.fetchall():
-                print(j)
-                b.create_task(a.cry(ID=j[0]))'''
