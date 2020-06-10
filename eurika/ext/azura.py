@@ -9,6 +9,12 @@ import random
 import re
 import aiosqlite
 
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, tools
+from oauth2client import client as gclient
+
+
 cwd = r'C:\EurikaMkIII'
 
 class azurelane():
@@ -164,3 +170,59 @@ class azurelane():
                 em = discord.Embed(title=f'{alwd}(으)로 검색해서 나온 것이 하나도 없는걸.', colour=0xB5002B)
 
             return em
+
+    async def update():
+        async with aiosqlite.connect(cwd + "\db\EurALDB.db") as db:
+            SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
+            store = file.Storage('/EurikaMkIII/tokens/token.json')
+            creds = store.get()
+
+            if not creds or creds.invalid:
+                flow = gclient.flow_from_clientsecrets('/EurikaMkIII/tokens/credentials.json', SCOPES)
+                creds = tools.run_flow(flow, store)
+
+            service = build('sheets', 'v4', http=creds.authorize(Http()))
+
+            #service = build('sheets', 'v4', developerKey='AIzaSyA4EmI2jcPp-L3lOAHmIGrsnFFiQkZUhiI')
+
+            # Call the Sheets API
+            SPREADSHEET_ID = '1b6WAd7kNQ7zkeUu9vZdSVsWOt2KItLUgvYJqzDREDUw'
+            for ENTRY, RANGE_NAME in enumerate(['Update_Ship!A2:P500', 'Update_Skill!A2:E500']):
+                result = service.spreadsheets().values().get(spreadsheetId=SPREADSHEET_ID,
+                                                            range=RANGE_NAME).execute()
+                values = result.get('values', [])
+
+                if not values:
+                    pass
+                else:
+                    for row in values:
+                        if len(row) >= 2:
+                            if row[1] != '':
+                                if ENTRY == 0:
+
+                                    await db.execute("INSERT OR REPLACE INTO Ships (no, time, class, rarity, name, " \
+                                                   + "nation, slot1, slot2, slot3, adjratio, armor, skill, imglink, " \
+                                                   + "illust, voiceover, tag) VALUES (?, ?, ?, ?, ?, ?," \
+                                                   + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (int(row[0]), row[1],
+                                                   row[2], int(row[3]), row[4], row[5], row[6], row[7], row[8], row[9],
+                                                   row[10], row[11], row[12], row[13], row[14], ''))
+
+                                else:
+                                    await db.execute("INSERT OR REPLACE INTO Skill (id, name, category, maxlv, desc) " \
+                                                   + "VALUES (?, ?, ?, ?, ?)", (int(row[0]), row[1], int(row[2]), int(row[3]), row[4]))
+
+                    #Set up the size of area that will be deleted
+                    if ENTRY == 0:
+                        PURGE_WIDTH = 16
+                    else:
+                        PURGE_WIDTH = 5
+
+                    #Delete current entries
+                    values = [[""]*PURGE_WIDTH]*499
+                    body = { 'values': values }
+
+                    result = service.spreadsheets().values().update(spreadsheetId=SPREADSHEET_ID,
+                                                range=RANGE_NAME, valueInputOption='RAW',
+                                                body=body).execute()
+
+            await db.commit()
