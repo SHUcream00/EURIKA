@@ -9,6 +9,41 @@ import json
 
 cwd = r'C:\EurikaMkIII' #fallback
 
+async def kbo2():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://sports.news.naver.com/kbaseball/index.nhn") as resp:
+            ns_prefix = "https://sports.news.naver.com"
+            text = await resp.text()
+            soup = bs(text, "lxml")
+            games = soup.find_all("li", {"class": "hmb_list_items"})
+            res = []
+            for i in games:
+                temp, etc = {}, []
+                for j in i.findChildren():
+                    if j.name == 'em':
+                        temp['start_time'] = j.text.replace("\n","").replace(chr(32),"")
+                    elif j.name == 'a':
+                        if j.get('href').startswith('http://'):
+                            temp[j.text.replace("\n","").replace(chr(32),"")] = j.get('href')
+                        else:
+                            if "javascript" in  j.get('href'):
+                                temp[j.text.replace("\n","").replace(chr(32),"")] = ns_prefix + j.get('href').split("'")[1]
+                            else:
+                                temp[j.text.replace("\n","").replace(chr(32),"")] = ns_prefix + j.get('href')
+
+                    elif j.name == "div":
+                        if j.get("class")[0] == "score":
+                            if not temp.get("score", False):
+                                temp['score'] = j.get_text().replace("\n", "").replace(chr(32), "").replace("\t", "")
+                            else:
+                                temp['score'] = [temp.get("score", False)] + [j.get_text().replace("\n", "").replace(chr(32), "").replace("\t", "")]
+                    else:
+                        if len(j.get_text().replace("\n", "").replace(chr(32), "")) != 0:
+                            etc.append(j.get_text().replace("\n", "").replace(chr(32), "").replace("\t", ""))
+                temp['etc'] = etc
+                res.append(temp)
+    return res
+
 async def kbo():
     ns_prefix = "https://sports.news.naver.com"
     target = "https://sports.news.naver.com/kbaseball/schedule/index.nhn"
@@ -43,7 +78,7 @@ async def kbo():
 
 async def standing():
     kboteam = {'SK': '씹솩', 'KT': '꼴콱', 'KIA': '홍어', 'LG': '좆쥐', '두산': '범죄', '롯데': '꼴데',
-               'NC': '씨발', '키움': '거지', '한화': '꼴칰', '삼성': '칩성'}
+               'NC': '씨발', '키움': '거지', '한화': '똥칰', '삼성': '칩성'}
 
     async with aiosqlite.connect(cwd + "\db\EurKBODB.db") as db:
         async with db.execute("SELECT * FROM Etcdata WHERE name='standing' LIMIT 1") as cursor:
@@ -212,11 +247,3 @@ async def kakasi(**kwargs):
 
 def tdrem(a):
     return str(a).strip('<td/>')
-
-'''
-#Test Driver
-if __name__ == "__main__":
-    a = asyncio.get_event_loop()
-    x = a.run_until_complete(stat_leaders(category="고의사구"))
-    print(x)
-'''
