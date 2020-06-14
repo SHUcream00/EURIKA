@@ -217,23 +217,36 @@ async def on_message(msg):
         '''
 
 
-    if msg.content.startswith('=2빠따'):
-        def codeblock(text):
-            '''return text wrapped up in python codeblock for discord'''
-            return '```python\n'+str(text)+'\n```'
-
+    #New Baseball Score module 200605
+    if msg.content.startswith('=빠따'):
         jotkey = "https://cdn.discordapp.com/attachments/88844446929547264/706777124601856030/asdf_400x400.png"
-        kbo_res = await kbo()
+        kbo_res = await kbo2()
 
         text = ''
         for i in kbo_res:
-            text += "**{} {} :regional_indicator_v: :regional_indicator_s: {} {} ** {} [**문자중계**]({})".format(i['etc'][3], i['etc'][5], i['etc'][10],i['etc'][8],i['start_time'],i['문자중계'])
-            text += codeblock("\n[{}] {} VS {} [{}] \n".format(i['etc'][3], i['etc'][2].split(chr(58))[1], i['etc'][7].split(chr(58))[1], i['etc'][8]))
-            #em.add_field(name="**{} vs {}**".format(i['etc'][3],i['etc'][8]), value="[**문자중계**]({})".format(i['문자중계']))
+            if i.get("score", False) or i['start_time'] in ["종료", "경기취소"]:
+                if i['start_time'] == "종료":
+                    text += f"**{i['etc'][0]}ㅤ{i['score'][0]}ㅤ:regional_indicator_v: :regional_indicator_s:ㅤ{i['score'][1]}ㅤ{i['etc'][2]} ** ㅤㅤ**경기 종료**"
+                    text += await codeblock(f"\n[{i['etc'][0]}] {i['etc'][1]} VS {i['etc'][3]} [{i['etc'][2]}] \n")
+                elif i['start_time'] == "경기취소":
+                    text += f"**{i['etc'][0]}ㅤ0ㅤ:regional_indicator_v: :regional_indicator_s:ㅤ0ㅤ{i['etc'][2]} ** ㅤㅤ**경기 취소**"
+                    text += await codeblock(f"\n[{i['etc'][0]}] {i['etc'][1]} VS {i['etc'][3]} [{i['etc'][2]}] \n")
+                else:
+                    text += f"**{i['etc'][0]}ㅤ{i['score'][0]}ㅤ:regional_indicator_v: :regional_indicator_s:ㅤ{i['score'][1]}ㅤ{i['etc'][2]} **ㅤ{i['start_time']} ㅤㅤ[**문자**]({i['문자']})ㅤ[**TV**]({i['TV']})"
+                    text += await codeblock(f"\n[{i['etc'][0]}] {i['etc'][1]} VS {i['etc'][3]} [{i['etc'][2]}] \n")
+            else:
+                if len(i['etc']) >= 4:
+                    text += f"**{i['etc'][0]}ㅤㅤ:regional_indicator_v: :regional_indicator_s:ㅤㅤ{i['etc'][2]} **ㅤ{i['start_time']} ㅤㅤ[**전력분석**]({i['전력']})"
+                    text += await codeblock(f"\n[{i['etc'][0]}] {i['etc'][1]} VS {i['etc'][3]} [{i['etc'][2]}] \n")
+                else:
+                    text += f"**{i['etc'][0]}ㅤㅤ:regional_indicator_v: :regional_indicator_s:ㅤㅤ{i['etc'][1]} **ㅤ{i['start_time']} ㅤㅤ[**전력분석**]({i['전력']})"
+                    text += await codeblock(f"\n[{i['etc'][0]}] 미정 VS 미정 [{i['etc'][1]}] \n")
+
         em = discord.Embed(title=":baseball: 오늘의 상위리그", description=text, colour=0x07ECBA)
 
         em.set_thumbnail(url=jotkey)
         await msg.channel.send(embed=em)
+
 
     if msg.content.startswith(chr(45)):
         '''SIG driver, help users print meme images without big effort'''
