@@ -156,7 +156,8 @@ async def on_message(msg):
         except:
             await msg.channel.send("=알람 시간 메모")
 
-    if msg.content.startswith('=2날씨'):
+    #KRWeather module
+    if msg.content.startswith('=날씨'):
         try:
             if len(msg.content.split()) == 3:
                 country, city = msg.content.split()[1], msg.content.split()[2]
@@ -176,13 +177,19 @@ async def on_message(msg):
             weather = wt()
             weather_text = await weather.jindo3(await weather.get_area_code(country, city))
             praise_sun = "https://cdn.discordapp.com/attachments/88844446929547264/706440056671436830/Praise-the-Sun.png"
-
             today = datetime.date.today()
             today_str = today.strftime('%Y%m%d')
             tmr_str, twod_str = (today + datetime.timedelta(days=1)).strftime('%Y%m%d'), (today + datetime.timedelta(days=2)).strftime('%Y%m%d')
-            em = discord.Embed(title="{} | {}°C, {} 습도 {}%".format(country+ " " + city, weather_text[today_str][0][2], emojify_wt(weather_text[today_str][0][1]), weather_text[today_str][0][3]),
-                               description = "오늘 최고기온 {}°C 최저기온 {}°C :umbrella2: 강수 {}%".format(weather_text['maxTmpr'][0], weather_text['minTmpr'][0], weather_text[today_str][0][4]),
-                               colour=0x07ECBA)
+
+            if weather_text.get(today_str, False):
+                em = discord.Embed(title="{} | {}°C, {} 습도 {}%".format(country+ " " + city, weather_text[today_str][0][2], emojify_wt(weather_text[today_str][0][1]), weather_text[today_str][0][3]),
+                                   description = "오늘 최고기온 {}°C 최저기온 {}°C :umbrella2: 강수 {}%".format(weather_text['maxTmpr'][0], weather_text['minTmpr'][0], weather_text[today_str][0][4]),
+                                   colour=0x07ECBA)
+            else:
+                #21~24
+                em = discord.Embed(title="{} | {}°C, {} 습도 {}%".format(country+ " " + city, weather_text[tmr_str][0][2], emojify_wt(weather_text[tmr_str][0][1]), weather_text[tmr_str][0][3]),
+                                   description = "오늘 최고기온 {}°C 최저기온 {}°C :umbrella2: 강수 {}%".format(weather_text['maxTmpr'][0], weather_text['minTmpr'][0], weather_text[tmr_str][0][4]),
+                                   colour=0x07ECBA)
 
             if weather_text.get(today_str, False):
                 em.add_field(name='오늘', value= stringfy_w_res(today_str))
@@ -191,9 +198,11 @@ async def on_message(msg):
             em.set_thumbnail(url=praise_sun)
 
             await msg.channel.send(embed=em)
-        except:
 
-            await msg.channel.send("ㅗ")
+        except Exception as e:
+            print("WEATHER ERROR", repr(e))
+            em = discord.Embed(title="에러가 발생했어요", description="[사용법] **=날씨 지역명**\n :exclamation: 지역명은 군/구 단위까지만 가능!", color=color_err)
+            await msg.channel.send(embed=em)
 
     #Youtube module 200524
     if msg.content.startswith('=유튜브'):
