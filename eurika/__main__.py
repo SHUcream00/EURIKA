@@ -204,6 +204,28 @@ async def on_message(msg):
             em = discord.Embed(title="에러가 발생했어요", description="[사용법] **=날씨 지역명**\n :exclamation: 지역명은 군/구 단위까지만 가능!", color=color_err)
             await msg.channel.send(embed=em)
 
+    #Alarm module
+    if msg.content.startswith('=알람'):
+        #try:
+        alarm_amt = msg.content.split()[1:]
+        if alarm_amt[0] == "리스트":
+            alarm_list = await get_alarm(msg.author.id)
+
+            em = discord.Embed(title = f"{msg.author.display_name}의 알람리스트"
+                                ,description = await codeblock ("\n".join(map(lambda x: f"{x[2]}에 {x[3]}알리기.\n잔여시간 앞으로... {x[6]}"
+                                    , sorted(alarm_list, key=lambda x: x[2]))))
+                                    , color = 0x07ECBA)
+            em.set_thumbnail(url=msg.author.avatar_url)
+            await msg.channel.send(embed = em)
+
+        else:
+            await msg.channel.send(f"{msg.author.display_name}, 시간이 되면 알려줄게!")
+            await alarm(msg.author.id, alarm_amt[0], chr(32).join(alarm_amt[1:]), channel=msg.channel.id, server=msg.guild.id)
+            await msg.channel.send(f"{msg.author.mention}, {' '.join(alarm_amt[1:])}시간이야")
+        '''
+        except:
+            await msg.channel.send("=알람 시간 메모")'''
+
     #Youtube module 200524
     if msg.content.startswith('=유튜브'):
         #try:
