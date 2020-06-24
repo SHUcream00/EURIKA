@@ -156,6 +156,35 @@ async def on_message(msg):
         except:
             await msg.channel.send("=알람 시간 메모")
 
+    #Getchu module
+    if msg.content.startswith('=겟츄'):
+        try:
+            linked = ["[{}]({})".format(i,j) for i,j in await gclister(msg.content.split()[1])]
+            em = discord.Embed(description="\n".join(linked), colour=0xff9fde)
+            em.set_author(name = f'[GETCHU] {msg.content.split()[1]}랭킹', icon_url = 'http://www.getchu.com/common/images/logo_com10th_1.gif')
+            em.set_image(url='http://www.eukleia.co.jp/eushully/eu20/twitter/twitter_headereu20.jpg')
+            await msg.channel.send(embed=em)
+        except:
+            em = discord.Embed(title='GETCHU의 현 예약, 선호, 매출 등 랭킹을 확인 가능한 스크립트야.', description= '=겟츄 예약\n' \
+                   +'현 시점의 예약 랭킹이야. \n' \
+                   +'\n' \
+                   +'=겟츄 매출\n' \
+                   +'현 시점의 주간 매출 랭킹을 보여줘 \n' \
+                   +'\n' \
+                   +'=겟츄 액세스\n' \
+                   +'지난 24시간 내에 많은 사람들이 열람한 야겜 제품의 랭킹이야.\n' \
+                   +'\n' \
+                   +'=겟츄 선호작\n' \
+                   +'가장 많은 사람들이 선호작으로 등록한 야겜의 랭킹이야. \n' \
+                   +'\n' \
+                   +'=겟츄 연간\n' \
+                   +'지난해에 가장 많이 팔린 야겜의 랭킹이야. \n' \
+                   +'\n' \
+                   ,colour=0xff9fde)
+            em.set_author(name="=겟츄 명령어 가이드북", icon_url='http://www.getchu.com/common/images/logo_com10th_1.gif')
+            await msg.channel.send(embed=em)
+
+
     #KRWeather module
     if msg.content.startswith('=날씨'):
         try:
