@@ -156,6 +156,22 @@ async def on_message(msg):
         except:
             await msg.channel.send("=알람 시간 메모")
 
+    if msg.content.startswith('=영역') or msg.content.startswith('=trans'):
+        if len(msg.content.split()) != 1:
+            target_text = msg.content.split(' ', 1)[1]
+            if translate.detect_korean(target_text) == 1:
+                trans = translate('auto', 'en')
+            else:
+                trans = translate('auto', 'ko')
+
+            em = discord.Embed(title='주어진 텍스트의 번역 결과입니다.', description = await trans.actual(target_text), colour=0x07ECBA)
+            await msg.channel.send(embed=em)
+
+        else:
+            em = discord.Embed(title='영역 스크립트입니다.', description = '주어진 문장이 한국어면 영어로, 나머지는 한국어로 고칩니다.', colour=0x07ECBA)
+            await msg.channel.send(embed = em)
+
+
     #Getchu module
     if msg.content.startswith('=겟츄'):
         try:
