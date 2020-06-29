@@ -142,6 +142,17 @@ async def on_message(msg):
     if msg.content.startswith('Dice'):
         pass
 
+    if msg.content == '=카드':
+        #loop = asyncio.get_event_loop()
+        #with concurrent.futures.ProcessPoolExecutor() as pool:
+        await pbm.maker(user=msg.author, server=msg.guild, color=msg.author.colour.to_rgb(),
+              cardtypes = ['gg', 'normal', 'ex', 'allstar', 'rare', 'classic', 'franchise', 'legend', 'legendold', 'live', 'potential', 'live1'],
+              statlist = ['적폐력', '페도력', '홍어력', '네덕력', '통베력', '한남력'],
+              pbm = 1,
+              target = None)
+
+        await msg.channel.send(file=discord.File(f'C:\EurikaMkIII\\temp\\pbm\\{msg.author.id}.png'))
+
     if msg.content.startswith('=2알람'):
         try:
             alarm_amt = msg.content.split()[1:]
