@@ -142,6 +142,19 @@ async def on_message(msg):
     if msg.content.startswith('Dice'):
         pass
 
+
+    if msg.content == '=포인트랭킹':
+        spem = await sp.showrank(client)
+        await msg.channel.send(embed=spem)
+
+    if msg.content == '=힐러리랭킹':
+        spem = await sp.showhrank(client)
+        await msg.channel.send(embed=spem)
+
+    if msg.content == '=힐러리전당':
+        spem = await sp.showhlegend(client)
+        await msg.channel.send(embed=spem)
+
     if msg.content == '=카드':
         #loop = asyncio.get_event_loop()
         #with concurrent.futures.ProcessPoolExecutor() as pool:
