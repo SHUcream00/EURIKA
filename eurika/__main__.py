@@ -100,7 +100,7 @@ async def on_message(msg):
         except Exception as e:
             print("NICKCHANGE ERROR", repr(e))
 
-    if msg.channel.id in [92580086091366400, 360591565112082443, 509321410053799937]:
+    if msg.channel.id in [92580086091366400, 360591565112082443, 509321410053799937, 732039740030844989]:
         if (len(msg.attachments) == 0 or msg.author.id == client.user.id) and str(msg.content).split(".")[msg.content.count(".")] not in ["png", "jpg", "gif", "mp4", "mov", "webm", "webp", "gifv"]:
             await msg.delete()
 
