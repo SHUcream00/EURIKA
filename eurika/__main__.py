@@ -110,11 +110,26 @@ async def on_message(msg):
 
 #===========================================================================================================
 
+    if msg.content.startswith("=계산"):
+        try:
+            ctx = "".join(msg.content.split(chr(32), 1)[1])
+            res = await calc(ctx)
+            em = discord.Embed(description=f"{await blueblock(f'[주어진 수식: {ctx}]')}{await codeblock(f'{res:,}')}", color=color_def)
+            em.set_author(name = f"{client.user.display_name} 계산 서비스", icon_url=client.user.avatar_url)
+            await msg.channel.send(embed=em)
+
+        except Exception as e:
+            print("CALC ERROR", repr(e))
+            em = discord.Embed(description="왜구련아.", color=color_err)
+            em.set_author(name = f"{client.user.display_name} 계산 서비스", icon_url=client.user.avatar_url)
+            await msg.channel.send(embed=em)
+
+
     if msg.content.startswith("=선택"):
         try:
             ctx = str(await rand_select(msg.content.split()[1:]))
             em = discord.Embed(description="ㅤ\n**{}**\nㅤ".format(ctx.center(13, "ㅤ")), color=color_def)
-            em.set_footer(text=f"{client.user.display_name}님의 신탁")
+            em.set_footer(text=f"{client.user.display_name}님의 선택")
             em.set_thumbnail(url=client.user.avatar_url)
             await msg.channel.send(embed=em)
 
@@ -124,14 +139,20 @@ async def on_message(msg):
 
     if msg.content.startswith("=우선순위"):
         try:
-            em = discord.Embed(description=await ordered_select(msg.content.split()[1:]), color=color_def)
-            em.set_footer(text=f"{client.user.display_name}님의 신탁")
+            ctx = await ordered_select(msg.content.split()[1:])
+            em = discord.Embed(description=f"ㅤ\n**{ctx.center(20, 'ㅤ')}**\nㅤ", color=color_def)
+            em.set_footer(text=f"{client.user.display_name}님의 선택")
             em.set_thumbnail(url=client.user.avatar_url)
             await msg.channel.send(embed=em)
 
         except Exception as e:
             print("ORDSELECT ERROR", repr(e))
             pass
+
+    if msg.content.startswith("=명령"):
+        em = discord.Embed(description=f"[유리카 커맨드 리스트](https://eurika.readthedocs.io/en/latest/)", color=color_def)
+        await msg.channel.send(embed=em)
+
 
     if msg.content.startswith('Memory'):
         if msg.count(chr(32)) < 2:
