@@ -14,10 +14,10 @@ description = '''Python Twitter wrapper for EURIKA'''
 class cuckoobird():
 
     def __init__(self):
-        self.consumer_key="H3eY1RwLJUknSveNUpaGnG81W"
-        self.consumer_secret="UYbLgyqh29wFzupWViWxpVNvIX8na5cRX24fk4qDc4sfHBLt3Y"
-        self.access_token="3752069838-KDeOEcia3lYjjlN4csSXajF8XwpFumu7ubrcEcH"
-        self.access_token_secret="kOEZByGr0nkVBC4gW8HEJHMdjB8CDOkuafzeo99lawQo2"
+        self.consumer_key=""
+        self.consumer_secret=""
+        self.access_token=""
+        self.access_token_secret=""
 
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
